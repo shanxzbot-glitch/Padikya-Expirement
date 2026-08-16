@@ -1,290 +1,972 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyTrack | Focus & Flow</title>
-    <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <style>
-        :root {
-            --bg: #050505;
-            --accent: #8b5cf6; /* Vibrant Purple */
-            --accent-glow: rgba(139, 92, 246, 0.3);
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.08);
-            --text: #ffffff;
-            --text-dim: #a1a1aa;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1115" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>STRIKECORE — Push-Up Tracker</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel for inline JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            overflow-x: hidden;
-            min-height: 100vh;
-        }
-
-        /* Animated Background Aura */
-        .aura {
-            position: fixed;
-            width: 400px;
-            height: 400px;
-            background: var(--accent-glow);
-            filter: blur(120px);
-            border-radius: 50%;
-            z-index: -1;
-            animation: flow 15s infinite alternate;
-        }
-
-        @keyframes flow {
-            0% { transform: translate(-10%, -10%); }
-            100% { transform: translate(100%, 50%); }
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        /* Header */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 50px;
-            animation: fadeInDown 0.8s ease-out;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            background: linear-gradient(to right, #fff, var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Main Grid */
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1.5fr 1fr;
-            gap: 24px;
-        }
-
-        /* Glass Cards */
-        .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(15px);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 30px;
-            transition: all 0.3s ease;
-            animation: fadeInUp 0.8s ease-out;
-        }
-
-        .card:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 20px var(--accent-glow);
-        }
-
-        /* Timer Section */
-        .timer-container {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #timer-display {
-            font-size: 5rem;
-            font-weight: 800;
-            margin: 20px 0;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .timer-controls button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin: 0 5px;
-        }
-
-        .timer-controls button:active { transform: scale(0.95); }
-
-        /* Task List Section */
-        .task-input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        input {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border);
-            padding: 12px 15px;
-            border-radius: 12px;
-            color: white;
-            flex-grow: 1;
-            outline: none;
-        }
-
-        #task-list {
-            list-style: none;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .task-item {
-            background: rgba(255,255,255,0.02);
-            padding: 12px 15px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            animation: slideInLeft 0.4s ease-out;
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideInLeft {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .dashboard { grid-template-columns: 1fr; }
-            #timer-display { font-size: 4rem; }
-            header { flex-direction: column; gap: 15px; text-align: center; }
-        }
-    </style>
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      background-color: #0f1115;
+      color: #f1f5f9;
+      margin: 0;
+      padding: 0;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    input, select, textarea {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 17, 21, 0.8); }
+    ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.6); border-radius: 4px; }
+    @keyframes ping-slow {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+    .animate-ping-once {
+      animation: ping-slow 0.6s cubic-bezier(0, 0, 0.2, 1) forwards;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-[#0f1115] text-slate-100 min-h-screen">
+  <div id="root"></div>
 
-    <div class="aura"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
 
-    <div class="container">
-        <!-- Navigation -->
-        <header>
-            <div class="logo">STUDYTRACK.</div>
-            <div id="date-display" style="color: var(--text-dim); font-size: 0.9rem;"></div>
-        </header>
+    // --- Audio Synthesizer (Zero External Dependencies) ---
+    const playSynthSound = (type = 'rep') => {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
 
-        <main class="dashboard">
-            <!-- Left Side: Focus Timer -->
-            <section class="card timer-container">
-                <span style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem; color: var(--accent);">Focus Mode</span>
-                <div id="timer-display">25:00</div>
-                <div class="timer-controls">
-                    <button id="start-btn">Start Session</button>
-                    <button id="reset-btn" style="background: transparent; border: 1px solid var(--border);">Reset</button>
-                </div>
-            </section>
-
-            <!-- Right Side: Tasks -->
-            <section class="card">
-                <h2 style="margin-bottom: 20px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px;">
-                    <i data-lucide="check-circle"></i> Daily Goals
-                </h2>
-                <div class="task-input-group">
-                    <input type="text" id="task-input" placeholder="What are we studying?">
-                    <button id="add-task" style="background: var(--accent); border: none; width: 45px; height: 45px; border-radius: 12px; color: white; cursor: pointer;">
-                        <i data-lucide="plus"></i>
-                    </button>
-                </div>
-                <ul id="task-list">
-                    <!-- Tasks will appear here -->
-                    <div class="task-item" style="color: var(--text-dim); font-size: 0.8rem;">No tasks yet...</div>
-                </ul>
-            </section>
-        </main>
-
-        <!-- Stats Section -->
-        <section class="card" style="margin-top: 24px; display: flex; justify-content: space-around; text-align: center;">
-            <div>
-                <h4 style="color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase;">Sessions</h4>
-                <p id="stat-sessions" style="font-size: 1.5rem; font-weight: 800;">0</p>
-            </div>
-            <div style="width: 1px; background: var(--border);"></div>
-            <div>
-                <h4 style="color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase;">Focus Time</h4>
-                <p id="stat-time" style="font-size: 1.5rem; font-weight: 800;">0h</p>
-            </div>
-        </section>
-    </div>
-
-    <script>
-        // Initialize Icons
-        lucide.createIcons();
-
-        // Date Display
-        const options = { weekday: 'long', month: 'long', day: 'numeric' };
-        document.getElementById('date-display').innerText = new Date().toLocaleDateString(undefined, options);
-
-        // --- THEME & UI ANIMATION LOGIC ---
-        // This makes the UI feel "alive"
-        document.querySelectorAll('.card').forEach((card, index) => {
-            card.style.animationDelay = `${index * 0.1}s`;
-        });
-
-        // --- YOUR DATA LOGIC HERE ---
-        // (This is where you can paste your existing JavaScript from your original index.html)
-        // Below is a basic placeholder to keep the app functional:
-
-        let timeLeft = 1500;
-        let timerId = null;
-
-        const timerDisplay = document.getElementById('timer-display');
-        const startBtn = document.getElementById('start-btn');
-
-        function updateDisplay() {
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        const now = ctx.currentTime;
+        if (type === 'rep') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, now); // D5
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } else if (type === 'complete') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.setValueAtTime(659.25, now + 0.08);
+          osc.frequency.setValueAtTime(783.99, now + 0.16);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        } else if (type === 'timer') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, now);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+          osc.start(now);
+          osc.stop(now + 0.2);
         }
+      } catch (e) {
+        console.warn('Audio context playback not permitted', e);
+      }
+    };
 
-        startBtn.addEventListener('click', () => {
-            if (timerId) {
-                clearInterval(timerId);
-                timerId = null;
-                startBtn.textContent = 'Resume';
-            } else {
-                timerId = setInterval(() => {
-                    timeLeft--;
-                    updateDisplay();
-                    if (timeLeft === 0) clearInterval(timerId);
-                }, 1000);
-                startBtn.textContent = 'Pause';
-            }
-        });
+    const speakCount = (count) => {
+      if ('speechSynthesis' in window && count > 0) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(String(count));
+        utter.rate = 1.3;
+        utter.pitch = 1.1;
+        window.speechSynthesis.speak(utter);
+      }
+    };
 
-        // --- END DATA LOGIC ---
-    </script>
+    const triggerHaptic = () => {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(25);
+      }
+    };
+
+    // --- Built-in SVG Icons ---
+    const Icon = ({ name, className = "w-4 h-4" }) => {
+      switch (name) {
+        case 'activity':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>;
+        case 'target':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+        case 'flame':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 2c0 4.5-3.5 6-3.5 10a5.5 5.5 0 0011 0c0-4-3.5-5.5-3.5-10 0 0-2 2-4 0z"/></svg>;
+        case 'calendar':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
+        case 'award':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>;
+        case 'plus':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+        case 'minus':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+        case 'rotate':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>;
+        case 'check':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>;
+        case 'timer':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+        case 'play':
+          return <svg className={className} fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
+        case 'pause':
+          return <svg className={className} fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>;
+        case 'settings':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>;
+        case 'trash':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>;
+        case 'download':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+        case 'maximize':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>;
+        case 'minimize':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M4 14h6v6m10-10h-6V4m0 6l7-7M3 21l7-7"/></svg>;
+        case 'volume':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>;
+        case 'volumex':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>;
+        case 'x':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+        default:
+          return null;
+      }
+    };
+
+    const VARIATIONS = ['Standard', 'Wide Grip', 'Diamond / Close Grip', 'Decline', 'Incline', 'Pike', 'Archer', 'Custom'];
+    const getTodayStr = () => new Date().toISOString().split('T')[0];
+
+    // --- Main App Component ---
+    function App() {
+      // Data State
+      const [records, setRecords] = useState(() => {
+        try {
+          const saved = localStorage.getItem('pushup_records_v2');
+          return saved ? JSON.parse(saved) : [
+            { id: '1', date: getTodayStr(), count: 20, variation: 'Standard', timestamp: Date.now() - 3600000, setNumber: 1, notes: 'Warmup set' },
+            { id: '2', date: getTodayStr(), count: 25, variation: 'Standard', timestamp: Date.now() - 1800000, setNumber: 2, notes: 'Good tempo' }
+          ];
+        } catch (e) { return []; }
+      });
+
+      const [settings, setSettings] = useState(() => {
+        try {
+          const saved = localStorage.getItem('pushup_settings_v2');
+          return saved ? JSON.parse(saved) : {
+            dailyTarget: 100,
+            soundEnabled: true,
+            voiceAnnounce: true,
+            vibrateOnTap: true,
+            autoStartRestTimer: true,
+            defaultRestSeconds: 60
+          };
+        } catch (e) {
+          return { dailyTarget: 100, soundEnabled: true, voiceAnnounce: true, vibrateOnTap: true, autoStartRestTimer: true, defaultRestSeconds: 60 };
+        }
+      });
+
+      // UI State
+      const [activeTab, setActiveTab] = useState('counter');
+      const [currentReps, setCurrentReps] = useState(0);
+      const [variation, setVariation] = useState('Standard');
+      const [customVariation, setCustomVariation] = useState('');
+      const [notes, setNotes] = useState('');
+      const [isFloorMode, setIsFloorMode] = useState(false);
+      const [ripples, setRipples] = useState([]);
+
+      // Rest Timer State
+      const [restTimeRemaining, setRestTimeRemaining] = useState(0);
+      const [isTimerRunning, setIsTimerRunning] = useState(false);
+      const [restDuration, setRestDuration] = useState(settings.defaultRestSeconds);
+
+      // Modals
+      const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+      const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [selectedFilterVar, setSelectedFilterVar] = useState('All');
+
+      // Sync LocalStorage
+      useEffect(() => {
+        localStorage.setItem('pushup_records_v2', JSON.stringify(records));
+      }, [records]);
+
+      useEffect(() => {
+        localStorage.setItem('pushup_settings_v2', JSON.stringify(settings));
+      }, [settings]);
+
+      // Timer Interval
+      useEffect(() => {
+        let interval = null;
+        if (isTimerRunning && restTimeRemaining > 0) {
+          interval = setInterval(() => {
+            setRestTimeRemaining((prev) => {
+              if (prev <= 1) {
+                if (settings.soundEnabled) playSynthSound('timer');
+                triggerHaptic();
+                setIsTimerRunning(false);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+        }
+        return () => clearInterval(interval);
+      }, [isTimerRunning, restTimeRemaining, settings.soundEnabled]);
+
+      // Keyboard Shortcuts
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+          if (e.code === 'Space' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            handleRepIncrement(1);
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            handleRepIncrement(-1);
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentReps > 0) handleLogSet();
+          }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [currentReps, variation, customVariation, notes]);
+
+      // Metrics Computation
+      const todayStr = getTodayStr();
+      const todayRecords = records.filter(r => r.date === todayStr);
+      const todayReps = todayRecords.reduce((acc, r) => acc + r.count, 0);
+      const todaySetsCount = todayRecords.length;
+      const todayGoalPercent = Math.min(100, Math.round((todayReps / settings.dailyTarget) * 100));
+
+      const currentStreak = useMemo(() => {
+        const uniqueDates = Array.from(new Set(records.map(r => r.date))).sort().reverse();
+        if (uniqueDates.length === 0) return 0;
+        let streak = 0;
+        let checkDate = new Date();
+        if (!uniqueDates.includes(todayStr)) {
+          checkDate.setDate(checkDate.getDate() - 1);
+        }
+        while (true) {
+          const dStr = checkDate.toISOString().split('T')[0];
+          if (uniqueDates.includes(dStr)) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+          } else {
+            break;
+          }
+        }
+        return streak;
+      }, [records, todayStr]);
+
+      // Rep Increment Handler
+      const handleRepIncrement = (amount, e) => {
+        const next = Math.max(0, currentReps + amount);
+        setCurrentReps(next);
+
+        if (amount > 0) {
+          if (settings.soundEnabled) playSynthSound('rep');
+          if (settings.vibrateOnTap) triggerHaptic();
+          if (settings.voiceAnnounce && next > 0 && (next <= 5 || next % 5 === 0)) {
+            speakCount(next);
+          }
+
+          if (e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = (e.clientX || (rect.left + rect.width / 2)) - rect.left;
+            const y = (e.clientY || (rect.top + rect.height / 2)) - rect.top;
+            const newRip = { id: Date.now() + Math.random(), x, y };
+            setRipples(prev => [...prev.slice(-4), newRip]);
+            setTimeout(() => {
+              setRipples(prev => prev.filter(r => r.id !== newRip.id));
+            }, 600);
+          }
+        }
+      };
+
+      // Log Current Set
+      const handleLogSet = () => {
+        if (currentReps <= 0) return;
+        const newRecord = {
+          id: String(Date.now()),
+          date: todayStr,
+          count: currentReps,
+          variation: variation === 'Custom' && customVariation ? customVariation : variation,
+          timestamp: Date.now(),
+          setNumber: todaySetsCount + 1,
+          notes: notes.trim()
+        };
+        setRecords(prev => [newRecord, ...prev]);
+        if (settings.soundEnabled) playSynthSound('complete');
+        triggerHaptic();
+
+        // Reset
+        setCurrentReps(0);
+        setNotes('');
+        setIsFloorMode(false);
+
+        // Auto Start Rest Timer
+        if (settings.autoStartRestTimer) {
+          setRestTimeRemaining(settings.defaultRestSeconds);
+          setIsTimerRunning(true);
+        }
+      };
+
+      // Export CSV
+      const handleExportCSV = () => {
+        const headers = 'ID,Date,SetNumber,Reps,Variation,Notes,Timestamp\n';
+        const rows = records.map(r => `"${r.id}","${r.date}",${r.setNumber || 1},${r.count},"${r.variation}","${(r.notes || '').replace(/"/g, '""')}","${new Date(r.timestamp).toISOString()}"`).join('\n');
+        const blob = new Blob([headers + rows], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `strikecore_pushups_${todayStr}.csv`;
+        a.click();
+      };
+
+      return (
+        <div className="flex flex-col min-h-screen justify-between pb-24 sm:pb-8">
+          {/* Header */}
+          <header className="sticky top-0 z-30 border-b border-slate-800/80 bg-[#0f1115]/90 backdrop-blur-md px-4 py-3 sm:px-6">
+            <div className="mx-auto max-w-3xl flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-sky-600 text-slate-950 shadow-lg shadow-sky-500/20">
+                  <Icon name="activity" className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-base font-extrabold tracking-tight text-white sm:text-lg">
+                      STRIKE<span className="text-sky-400">CORE</span>
+                    </span>
+                    {currentStreak > 0 && (
+                      <div className="flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-bold text-amber-400 border border-amber-500/20">
+                        <Icon name="flame" className="w-3 h-3 text-amber-400" />
+                        <span>{currentStreak}d</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[10px] uppercase tracking-widest text-slate-500 font-medium hidden sm:block">Push-Up Performance Tracker</p>
+                </div>
+              </div>
+
+              {/* Header Right Actions */}
+              <div className="flex items-center gap-2">
+                {/* Today's Goal Ring */}
+                <div className="flex items-center gap-2 rounded-xl border border-slate-700/50 bg-slate-800/50 px-2.5 py-1 text-xs">
+                  <div className="relative flex h-6 w-6 items-center justify-center">
+                    <svg className="h-6 w-6 -rotate-90" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" className="text-slate-800" fill="none" />
+                      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" strokeDasharray="56.5" strokeDashoffset={56.5 - (56.5 * todayGoalPercent) / 100} strokeLinecap="round" className="text-sky-400 transition-all duration-500" fill="none" />
+                    </svg>
+                    <Icon name="target" className="absolute w-2.5 h-2.5 text-slate-400" />
+                  </div>
+                  <div className="text-left">
+                    <span className="font-mono-num font-bold text-sky-400 text-sm leading-none">{todayReps}</span>
+                    <span className="text-[10px] text-slate-500">/{settings.dailyTarget}</span>
+                  </div>
+                </div>
+
+                {/* Sound Toggle */}
+                <button
+                  onClick={() => setSettings(s => ({ ...s, soundEnabled: !s.soundEnabled }))}
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
+                    settings.soundEnabled ? 'border-slate-700/50 bg-slate-800/60 text-sky-400' : 'border-slate-800 bg-slate-900/50 text-slate-500'
+                  }`}
+                  title={settings.soundEnabled ? 'Sound On' : 'Sound Off'}
+                >
+                  <Icon name={settings.soundEnabled ? 'volume' : 'volumex'} className="w-4 h-4" />
+                </button>
+
+                {/* Settings Toggle */}
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700/50 bg-slate-800/60 text-slate-400 hover:text-slate-100"
+                >
+                  <Icon name="settings" className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Desktop Tabs */}
+            <div className="mx-auto max-w-3xl mt-3 hidden sm:flex items-center gap-1 rounded-xl border border-slate-800/80 bg-slate-900/60 p-1">
+              <button
+                onClick={() => setActiveTab('counter')}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-all ${
+                  activeTab === 'counter' ? 'bg-slate-800 text-sky-400 border border-slate-700/40 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Icon name="activity" className="w-3.5 h-3.5" /> Counter
+              </button>
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-all ${
+                  activeTab === 'history' ? 'bg-slate-800 text-sky-400 border border-slate-700/40 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Icon name="calendar" className="w-3.5 h-3.5" /> Workout Logs
+              </button>
+              <button
+                onClick={() => setActiveTab('stats')}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-all ${
+                  activeTab === 'stats' ? 'bg-slate-800 text-sky-400 border border-slate-700/40 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Icon name="award" className="w-3.5 h-3.5" /> Analytics
+              </button>
+            </div>
+          </header>
+
+          {/* Main Workspace */}
+          <main className="mx-auto max-w-3xl w-full px-4 py-4 sm:py-6">
+            {/* COUNTER VIEW */}
+            {activeTab === 'counter' && (
+              <div className="space-y-4">
+                {/* Floor Mode Fullscreen Overlay */}
+                {isFloorMode && (
+                  <div
+                    onClick={(e) => handleRepIncrement(1, e)}
+                    className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-[#0f1115] p-6 select-none cursor-pointer"
+                  >
+                    <div className="flex w-full items-center justify-between">
+                      <span className="flex items-center gap-2 text-sky-400 text-xs font-semibold animate-pulse">
+                        <Icon name="activity" className="w-4 h-4" /> Floor Nose/Chin Tap Mode
+                      </span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setIsFloorMode(false); }}
+                        className="flex items-center gap-1 rounded-full bg-slate-800 px-3.5 py-1.5 text-xs font-semibold text-slate-200"
+                      >
+                        <Icon name="minimize" className="w-3.5 h-3.5" /> Exit
+                      </button>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-9xl font-extrabold font-mono-num text-sky-400 tracking-tight">{currentReps}</div>
+                      <p className="mt-3 text-xs uppercase tracking-widest text-slate-400 font-semibold">Tap anywhere with nose / chest</p>
+                    </div>
+                    <div className="w-full max-w-sm flex gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleLogSet(); }}
+                        disabled={currentReps === 0}
+                        className="flex-1 rounded-2xl bg-gradient-to-r from-sky-400 to-sky-500 py-4 font-bold text-slate-950 shadow-lg disabled:opacity-40"
+                      >
+                        Log Set ({currentReps} Reps)
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setCurrentReps(0); }}
+                        className="rounded-2xl border border-slate-700 bg-slate-800 p-4 text-slate-400"
+                      >
+                        <Icon name="rotate" className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Primary Counter Card */}
+                <div className="rounded-3xl border border-slate-800/80 bg-slate-900/40 p-5 sm:p-7 shadow-2xl">
+                  {/* Top variation & options */}
+                  <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-800/80">
+                    <select
+                      value={variation}
+                      onChange={(e) => setVariation(e.target.value)}
+                      className="rounded-xl border border-slate-700/50 bg-slate-800/60 px-3 py-1.5 text-xs font-semibold text-slate-200 focus:outline-none focus:border-sky-500"
+                    >
+                      {VARIATIONS.map(v => <option key={v} value={v} className="bg-slate-900">{v}</option>)}
+                    </select>
+
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-lg bg-slate-800/60 border border-slate-700/50 px-2.5 py-1 text-xs font-medium text-slate-300">
+                        Set <span className="font-bold text-sky-400">#{todaySetsCount + 1}</span>
+                      </span>
+                      <button
+                        onClick={() => setIsFloorMode(true)}
+                        className="flex items-center gap-1 rounded-lg border border-slate-700/50 bg-slate-800/60 px-2.5 py-1 text-xs font-medium text-slate-300 hover:text-white"
+                        title="Full screen floor tap"
+                      >
+                        <Icon name="maximize" className="w-3.5 h-3.5 text-sky-400" />
+                        <span className="hidden sm:inline">Floor Mode</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {variation === 'Custom' && (
+                    <input
+                      type="text"
+                      placeholder="Enter custom exercise name..."
+                      value={customVariation}
+                      onChange={(e) => setCustomVariation(e.target.value)}
+                      className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-xs text-white focus:outline-none"
+                    />
+                  )}
+
+                  {/* Big Tap Disc */}
+                  <div className="my-6 flex justify-center">
+                    <div
+                      onClick={(e) => handleRepIncrement(1, e)}
+                      className="group relative flex h-56 w-56 sm:h-64 sm:w-64 cursor-pointer select-none items-center justify-center rounded-full border-4 border-slate-700/60 bg-slate-800/50 shadow-2xl transition-transform active:scale-95 hover:border-sky-500/50"
+                    >
+                      <div className="absolute inset-0 rounded-full bg-sky-500/10 blur-xl group-hover:bg-sky-500/20" />
+                      {ripples.map(rip => (
+                        <div
+                          key={rip.id}
+                          style={{ left: rip.x, top: rip.y }}
+                          className="pointer-events-none absolute h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-sky-400/40 animate-ping-once"
+                        />
+                      ))}
+                      <div className="relative z-10 text-center">
+                        <div className="font-mono-num text-7xl sm:text-8xl font-black text-white">{currentReps}</div>
+                        <span className="mt-1 text-xs font-semibold uppercase tracking-widest text-sky-400 block">Push-Ups</span>
+                        <span className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Tap Pad</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Increments / Quick adjustments */}
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => handleRepIncrement(-1)}
+                      disabled={currentReps <= 0}
+                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/50 bg-slate-800/60 text-slate-300 disabled:opacity-40"
+                    >
+                      <Icon name="minus" className="w-4 h-4" />
+                    </button>
+                    <button onClick={(e) => handleRepIncrement(1, e)} className="h-10 px-3 rounded-xl border border-slate-700/50 bg-slate-800/60 text-xs font-bold text-slate-200 hover:text-sky-400">+1</button>
+                    <button onClick={(e) => handleRepIncrement(5, e)} className="h-10 px-3 rounded-xl border border-slate-700/50 bg-slate-800/60 text-xs font-bold text-slate-200 hover:text-sky-400">+5</button>
+                    <button onClick={(e) => handleRepIncrement(10, e)} className="h-10 px-3 rounded-xl border border-slate-700/50 bg-slate-800/60 text-xs font-bold text-slate-200 hover:text-sky-400">+10</button>
+                    <button
+                      onClick={() => setCurrentReps(0)}
+                      disabled={currentReps <= 0}
+                      className="h-10 px-3 flex items-center gap-1 rounded-xl border border-slate-700/50 bg-slate-800/60 text-xs font-medium text-slate-400 disabled:opacity-40"
+                    >
+                      <Icon name="rotate" className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Set Notes Input */}
+                  <div className="mt-4">
+                    <input
+                      type="text"
+                      placeholder="Optional set note (e.g. strict form, fast tempo...)"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="w-full rounded-xl border border-slate-700/50 bg-slate-800/40 px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
+
+                  {/* Log Set Primary Button */}
+                  <button
+                    onClick={handleLogSet}
+                    disabled={currentReps === 0}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-400 to-sky-500 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-sky-500/20 active:scale-[0.99] disabled:opacity-40"
+                  >
+                    <Icon name="check" className="w-5 h-5 stroke-[2.5]" />
+                    <span>{currentReps > 0 ? `Log Set (${currentReps} Reps)` : 'Tap pad to record push-ups'}</span>
+                  </button>
+
+                  {/* Goal Progress Bar */}
+                  <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-900/50 p-3.5">
+                    <div className="flex items-center justify-between text-xs mb-1.5">
+                      <span className="font-semibold text-slate-300 flex items-center gap-1.5">
+                        <Icon name="target" className="w-3.5 h-3.5 text-sky-400" /> Today's Goal Progress
+                      </span>
+                      <span className="font-mono-num text-sky-400 font-bold">
+                        {todayReps + currentReps} / {settings.dailyTarget} ({Math.min(100, Math.round(((todayReps + currentReps) / settings.dailyTarget) * 100))}%)
+                      </span>
+                    </div>
+                    <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-sky-500 to-sky-400 transition-all duration-300"
+                        style={{ width: `${Math.min(100, Math.round(((todayReps + currentReps) / settings.dailyTarget) * 100))}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rest Timer Card */}
+                <div className={`rounded-3xl border p-4 sm:p-5 transition-all ${
+                  isTimerRunning ? 'border-sky-500/40 bg-slate-900/80 shadow-lg shadow-sky-500/10' : 'border-slate-800/80 bg-slate-900/40'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+                        isTimerRunning ? 'bg-sky-500/20 text-sky-400 animate-pulse' : 'bg-slate-800 text-slate-400'
+                      }`}>
+                        <Icon name="timer" className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Rest Timer</h4>
+                        <p className="text-[11px] text-slate-400">{isTimerRunning ? 'Resting between sets' : 'Ready for next rest'}</p>
+                      </div>
+                    </div>
+                    <div className="font-mono-num text-2xl font-bold text-sky-400">
+                      {Math.floor((restTimeRemaining > 0 ? restTimeRemaining : restDuration) / 60)}:
+                      {String((restTimeRemaining > 0 ? restTimeRemaining : restDuration) % 60).padStart(2, '0')}
+                    </div>
+                  </div>
+
+                  <div className="mt-3 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      {[30, 45, 60, 90].map(sec => (
+                        <button
+                          key={sec}
+                          onClick={() => { setRestDuration(sec); setRestTimeRemaining(sec); setIsTimerRunning(true); }}
+                          className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${
+                            restDuration === sec && isTimerRunning ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-300'
+                          }`}
+                        >
+                          {sec}s
+                        </button>
+                      ))}
+                    </div>
+                    <div>
+                      {isTimerRunning ? (
+                        <div className="flex gap-1.5">
+                          <button onClick={() => setIsTimerRunning(false)} className="rounded-xl bg-slate-800 px-3 py-1.5 text-xs text-amber-400 font-semibold flex items-center gap-1">
+                            <Icon name="pause" className="w-3 h-3" /> Pause
+                          </button>
+                          <button onClick={() => { setIsTimerRunning(false); setRestTimeRemaining(0); }} className="rounded-xl bg-slate-800 px-3 py-1.5 text-xs text-slate-400">Skip</button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            if (restTimeRemaining === 0) setRestTimeRemaining(restDuration);
+                            setIsTimerRunning(true);
+                          }}
+                          className="rounded-xl bg-sky-500/20 border border-sky-500/30 px-3.5 py-1.5 text-xs font-semibold text-sky-400 flex items-center gap-1"
+                        >
+                          <Icon name="play" className="w-3 h-3" /> Start Rest
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* HISTORY VIEW */}
+            {activeTab === 'history' && (
+              <div className="space-y-4">
+                <div className="rounded-3xl border border-slate-800/80 bg-slate-900/40 p-4 sm:p-5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <h2 className="text-base font-bold text-white flex items-center gap-2">
+                        <Icon name="calendar" className="w-4 h-4 text-sky-400" /> Workout Logs
+                      </h2>
+                      <p className="text-xs text-slate-400">Total {records.length} sets logged</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={handleExportCSV} className="rounded-xl border border-slate-700/50 bg-slate-800/60 px-3 py-1.5 text-xs font-semibold text-slate-300 flex items-center gap-1">
+                        <Icon name="download" className="w-3.5 h-3.5" /> CSV
+                      </button>
+                      <button onClick={() => setIsAddModalOpen(true)} className="rounded-xl bg-gradient-to-r from-sky-400 to-sky-500 px-3.5 py-1.5 text-xs font-bold text-slate-950 shadow-md">
+                        + Log Entry
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Search date, variation, notes..."
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="w-full rounded-xl border border-slate-700/60 bg-slate-950/70 px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+                    />
+                    <select
+                      value={selectedFilterVar}
+                      onChange={e => setSelectedFilterVar(e.target.value)}
+                      className="rounded-xl border border-slate-700/60 bg-slate-950/70 px-3 py-2 text-xs text-slate-200"
+                    >
+                      <option value="All">All Variations</option>
+                      {VARIATIONS.map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Log List */}
+                <div className="space-y-2.5">
+                  {records.filter(r => {
+                    const matchQ = (r.date.includes(searchQuery) || (r.variation || '').toLowerCase().includes(searchQuery.toLowerCase()) || (r.notes || '').toLowerCase().includes(searchQuery.toLowerCase()));
+                    const matchV = selectedFilterVar === 'All' || r.variation === selectedFilterVar;
+                    return matchQ && matchV;
+                  }).map(rec => (
+                    <div key={rec.id} className="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-900/50 p-3.5">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-white text-sm">{rec.variation}</span>
+                          <span className="font-mono-num text-xs text-slate-500">{rec.date}</span>
+                        </div>
+                        {rec.notes && <p className="text-xs text-slate-400 mt-0.5 italic">"{rec.notes}"</p>}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono-num text-base font-extrabold text-sky-400">+{rec.count} <span className="text-xs text-slate-500 font-normal">reps</span></span>
+                        <button
+                          onClick={() => setRecords(prev => prev.filter(p => p.id !== rec.id))}
+                          className="p-1.5 text-slate-500 hover:text-rose-400"
+                        >
+                          <Icon name="trash" className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {records.length === 0 && (
+                    <div className="text-center py-12 text-slate-500 text-xs">No push-up records found. Log your first workout!</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* STATS VIEW */}
+            {activeTab === 'stats' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4">
+                    <span className="uppercase tracking-wider text-[10px] font-medium text-slate-400 block mb-1">Lifetime Reps</span>
+                    <div className="font-mono-num text-2xl font-extrabold text-white">{records.reduce((a, b) => a + b.count, 0).toLocaleString()}</div>
+                    <span className="text-[10px] text-slate-500">{records.length} total sets</span>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4">
+                    <span className="uppercase tracking-wider text-[10px] font-medium text-slate-400 block mb-1">Active Streak</span>
+                    <div className="font-mono-num text-2xl font-extrabold text-amber-400">{currentStreak} <span className="text-xs text-slate-400">days</span></div>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4">
+                    <span className="uppercase tracking-wider text-[10px] font-medium text-slate-400 block mb-1">Best Single Set</span>
+                    <div className="font-mono-num text-2xl font-extrabold text-sky-400">{Math.max(0, ...records.map(r => r.count))} <span className="text-xs text-slate-400">reps</span></div>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4">
+                    <span className="uppercase tracking-wider text-[10px] font-medium text-slate-400 block mb-1">Today's Total</span>
+                    <div className="font-mono-num text-2xl font-extrabold text-sky-400">{todayReps} <span className="text-xs text-slate-400">reps</span></div>
+                  </div>
+                </div>
+
+                {/* 7-Day Performance Bars */}
+                <div className="rounded-3xl border border-slate-800/80 bg-slate-900/40 p-5">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
+                    <Icon name="award" className="w-4 h-4 text-sky-400" /> Last 7 Days Activity
+                  </h3>
+                  <div className="flex h-44 items-end justify-between gap-2 border-b border-slate-800/80 pb-3">
+                    {Array.from({ length: 7 }).map((_, i) => {
+                      const d = new Date();
+                      d.setDate(d.getDate() - (6 - i));
+                      const dStr = d.toISOString().split('T')[0];
+                      const dayReps = records.filter(r => r.date === dStr).reduce((a, b) => a + b.count, 0);
+                      const maxReps = Math.max(settings.dailyTarget, ...records.map(r => r.count));
+                      const heightPercent = Math.min(100, Math.round((dayReps / maxReps) * 100));
+                      const isMet = dayReps >= settings.dailyTarget;
+                      return (
+                        <div key={dStr} className="flex flex-1 flex-col items-center gap-1.5 h-full justify-end">
+                          <span className="text-[10px] font-mono-num text-slate-400">{dayReps > 0 ? dayReps : '-'}</span>
+                          <div className="w-full max-w-[36px] bg-slate-800/80 rounded-xl h-full flex items-end overflow-hidden">
+                            <div
+                              className={`w-full rounded-xl transition-all ${isMet ? 'bg-gradient-to-t from-sky-500 to-sky-300' : dayReps > 0 ? 'bg-sky-600/80' : 'bg-transparent'}`}
+                              style={{ height: `${Math.max(dayReps > 0 ? 10 : 0, heightPercent)}%` }}
+                            />
+                          </div>
+                          <span className={`text-[10px] font-semibold ${dStr === todayStr ? 'text-sky-400' : 'text-slate-400'}`}>
+                            {d.toLocaleDateString('en-US', { weekday: 'short' })}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </main>
+
+          {/* Sticky Mobile Bottom Nav */}
+          <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-800/90 bg-[#0f1115]/95 backdrop-blur-lg sm:hidden px-3 pt-2 pb-3">
+            <div className="flex items-center justify-around">
+              <button
+                onClick={() => setActiveTab('counter')}
+                className={`flex flex-col items-center ${activeTab === 'counter' ? 'text-sky-400 font-bold' : 'text-slate-400'}`}
+              >
+                <Icon name="activity" className="w-5 h-5 mb-0.5" />
+                <span className="text-[10px]">Counter</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`flex flex-col items-center ${activeTab === 'history' ? 'text-sky-400 font-bold' : 'text-slate-400'}`}
+              >
+                <Icon name="calendar" className="w-5 h-5 mb-0.5" />
+                <span className="text-[10px]">Logs</span>
+              </button>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex h-11 w-11 -mt-4 items-center justify-center rounded-full bg-gradient-to-tr from-sky-500 to-sky-400 text-slate-950 shadow-lg shadow-sky-500/30"
+              >
+                <Icon name="plus" className="w-6 h-6 stroke-[2.5]" />
+              </button>
+              <button
+                onClick={() => setActiveTab('stats')}
+                className={`flex flex-col items-center ${activeTab === 'stats' ? 'text-sky-400 font-bold' : 'text-slate-400'}`}
+              >
+                <Icon name="award" className="w-5 h-5 mb-0.5" />
+                <span className="text-[10px]">Stats</span>
+              </button>
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className="flex flex-col items-center text-slate-400"
+              >
+                <Icon name="settings" className="w-5 h-5 mb-0.5" />
+                <span className="text-[10px]">Settings</span>
+              </button>
+            </div>
+          </nav>
+
+          {/* MANUAL ENTRY MODAL */}
+          {isAddModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+              <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/95 p-6 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <h3 className="text-base font-bold text-white">Log Push-Up Record</h3>
+                  <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white">
+                    <Icon name="x" className="w-4 h-4" />
+                  </button>
+                </div>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const form = e.target;
+                    const count = parseInt(form.count.value) || 1;
+                    const rec = {
+                      id: String(Date.now()),
+                      date: form.date.value,
+                      count,
+                      variation: form.variation.value,
+                      notes: form.notes.value,
+                      timestamp: new Date(form.date.value).getTime()
+                    };
+                    setRecords(prev => [rec, ...prev]);
+                    setIsAddModalOpen(false);
+                  }}
+                  className="mt-4 space-y-3"
+                >
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Date</label>
+                    <input type="date" name="date" defaultValue={todayStr} required className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Reps Count</label>
+                    <input type="number" name="count" defaultValue="20" min="1" required className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-mono-num text-sm font-bold text-sky-400" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Variation</label>
+                    <select name="variation" defaultValue="Standard" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200">
+                      {VARIATIONS.map(v => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Notes</label>
+                    <input type="text" name="notes" placeholder="Optional notes" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white" />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <button type="button" onClick={() => setIsAddModalOpen(false)} className="rounded-xl border border-slate-700 px-4 py-2 text-xs text-slate-400">Cancel</button>
+                    <button type="submit" className="rounded-xl bg-gradient-to-r from-sky-400 to-sky-500 px-4 py-2 text-xs font-bold text-slate-950">Save Entry</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* SETTINGS MODAL */}
+          {isSettingsOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+              <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/95 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <h3 className="text-base font-bold text-white">App Preferences</h3>
+                  <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-white">
+                    <Icon name="x" className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="mt-4 space-y-4 text-xs">
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                    <div className="flex justify-between mb-2">
+                      <span className="font-bold text-white">Daily Target Reps</span>
+                      <span className="font-mono-num text-sm font-bold text-sky-400">{settings.dailyTarget} reps</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="20"
+                      max="500"
+                      step="10"
+                      value={settings.dailyTarget}
+                      onChange={e => setSettings(s => ({ ...s, dailyTarget: parseInt(e.target.value) }))}
+                      className="w-full accent-sky-500 cursor-pointer"
+                    />
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span>Sound Effects</span>
+                      <input type="checkbox" checked={settings.soundEnabled} onChange={e => setSettings(s => ({ ...s, soundEnabled: e.target.checked }))} className="accent-sky-500 h-4 w-4" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Voice Count Announcements</span>
+                      <input type="checkbox" checked={settings.voiceAnnounce} onChange={e => setSettings(s => ({ ...s, voiceAnnounce: e.target.checked }))} className="accent-sky-500 h-4 w-4" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Haptic Vibration on Tap</span>
+                      <input type="checkbox" checked={settings.vibrateOnTap} onChange={e => setSettings(s => ({ ...s, vibrateOnTap: e.target.checked }))} className="accent-sky-500 h-4 w-4" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Auto-Start Rest Timer</span>
+                      <input type="checkbox" checked={settings.autoStartRestTimer} onChange={e => setSettings(s => ({ ...s, autoStartRestTimer: e.target.checked }))} className="accent-sky-500 h-4 w-4" />
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex justify-between gap-2">
+                    <button
+                      onClick={() => {
+                        if (confirm('Clear all push-up records?')) setRecords([]);
+                      }}
+                      className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-rose-400 font-semibold"
+                    >
+                      Clear Data
+                    </button>
+                    <button onClick={() => setIsSettingsOpen(false)} className="rounded-xl bg-gradient-to-r from-sky-400 to-sky-500 px-5 py-2 font-bold text-slate-950">
+                      Done
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
 </body>
 </html>
