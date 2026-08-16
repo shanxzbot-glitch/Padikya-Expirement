@@ -3,21 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#0f1115" />
+  <meta name="theme-color" content="#0a0907" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>STRIKECORE — Push-Up Tracker</title>
+  <title>SHNOI PRO — Precision Push-Up Protocol & Analytics</title>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- React & ReactDOM CDN -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <!-- Babel for inline JSX -->
+  <!-- Babel for inline JSX compilation -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- Google Fonts -->
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Google Fonts: Cinzel & Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 
   <style>
     * {
@@ -29,10 +32,14 @@
       touch-action: manipulation;
       user-select: none;
       -webkit-user-select: none;
-      background-color: #0f1115;
-      color: #f1f5f9;
+      background-color: #0a0907;
+      color: #f8fafc;
       margin: 0;
       padding: 0;
+      overflow-x: hidden;
+    }
+    .font-brand {
+      font-family: 'Cinzel', serif;
     }
     .font-mono-num {
       font-family: 'JetBrains Mono', monospace;
@@ -42,30 +49,157 @@
       user-select: text;
       -webkit-user-select: text;
     }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: rgba(15, 17, 21, 0.8); }
-    ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.6); border-radius: 4px; }
-    @keyframes ping-slow {
-      0% { transform: scale(1); opacity: 0.8; }
-      100% { transform: scale(2.2); opacity: 0; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: rgba(10, 9, 7, 0.9); }
+    ::-webkit-scrollbar-thumb { background: rgba(229, 195, 120, 0.35); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(229, 195, 120, 0.7); }
+    
+    @keyframes ping-once {
+      0% { transform: scale(0.8); opacity: 0.9; }
+      100% { transform: scale(2.4); opacity: 0; }
     }
-    .animate-ping-once {
-      animation: ping-slow 0.6s cubic-bezier(0, 0, 0.2, 1) forwards;
+    .animate-ping-custom {
+      animation: ping-once 0.6s cubic-bezier(0, 0, 0.2, 1) forwards;
     }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-[#0f1115] text-slate-100 min-h-screen">
+<body class="bg-[#0a0907] text-slate-100 min-h-screen">
   <div id="root"></div>
 
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
 
-    // --- Audio Synthesizer (Zero External Dependencies) ---
+    // Classy Luxury Theme Palettes
+    const THEMES = {
+      champagne_gold: {
+        id: 'champagne_gold',
+        name: 'Classy Noir & Champagne Gold',
+        subtitle: 'Warm Obsidian, Polished Aurum & Ivory (#E5C378)',
+        dotColor: '#E5C378',
+        bgBody: 'bg-[#0a0907]',
+        accentText: 'text-[#E5C378]',
+        accentGradient: 'from-[#F7E7B4] via-[#E5C378] to-[#C99C3B]',
+        accentBtn: 'bg-gradient-to-r from-[#F7E7B4] via-[#E5C378] to-[#C99C3B] text-slate-950 shadow-[0_0_24px_rgba(229,195,120,0.35)]',
+        accentGlow: 'shadow-[0_0_25px_rgba(229,195,120,0.25)]',
+        accentRing: '#E5C378',
+        accentBgLight: 'bg-[#E5C378]/15',
+        accentBorderLight: 'border-[#E5C378]/35',
+        confettiColors: ['#F7E7B4', '#E5C378', '#C99C3B', '#D4AF37', '#ffffff'],
+      },
+      royal_noir: {
+        id: 'royal_noir',
+        name: 'Monaco Platinum Noir',
+        subtitle: 'Sleek Obsidian, Platinum & Titanium',
+        dotColor: '#E2E8F0',
+        bgBody: 'bg-[#08090b]',
+        accentText: 'text-slate-100',
+        accentGradient: 'from-white via-slate-200 to-slate-400',
+        accentBtn: 'bg-gradient-to-r from-white via-slate-100 to-slate-300 text-slate-950 shadow-[0_0_20px_rgba(255,255,255,0.25)]',
+        accentGlow: 'shadow-[0_0_25px_rgba(255,255,255,0.2)]',
+        accentRing: '#E2E8F0',
+        accentBgLight: 'bg-white/10',
+        accentBorderLight: 'border-white/30',
+        confettiColors: ['#ffffff', '#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b'],
+      },
+      emerald_luxe: {
+        id: 'emerald_luxe',
+        name: 'Imperial Emerald & Gold',
+        subtitle: 'Deep Sovereign Green & Imperial Aurum',
+        dotColor: '#34D399',
+        bgBody: 'bg-[#060c08]',
+        accentText: 'text-emerald-300',
+        accentGradient: 'from-emerald-300 via-teal-400 to-[#E5C378]',
+        accentBtn: 'bg-gradient-to-r from-emerald-400 via-teal-400 to-[#E5C378] text-slate-950 shadow-[0_0_20px_rgba(52,211,153,0.3)]',
+        accentGlow: 'shadow-[0_0_25px_rgba(52,211,153,0.25)]',
+        accentRing: '#34D399',
+        accentBgLight: 'bg-emerald-400/15',
+        accentBorderLight: 'border-emerald-400/35',
+        confettiColors: ['#34D399', '#10B981', '#E5C378', '#D4AF37', '#ffffff'],
+      },
+      rose_velvet: {
+        id: 'rose_velvet',
+        name: 'Rose Gold & Royal Velvet',
+        subtitle: 'Opulent Tuscan Rose Gold & Deep Berry',
+        dotColor: '#FDA4AF',
+        bgBody: 'bg-[#0c0709]',
+        accentText: 'text-rose-300',
+        accentGradient: 'from-rose-200 via-rose-400 to-amber-300',
+        accentBtn: 'bg-gradient-to-r from-rose-300 via-rose-400 to-amber-300 text-slate-950 shadow-[0_0_20px_rgba(253,164,175,0.3)]',
+        accentGlow: 'shadow-[0_0_25px_rgba(253,164,175,0.25)]',
+        accentRing: '#FDA4AF',
+        accentBgLight: 'bg-rose-400/15',
+        accentBorderLight: 'border-rose-400/35',
+        confettiColors: ['#FDA4AF', '#F43F5E', '#FB7185', '#FDE047', '#ffffff'],
+      },
+      sapphire_sovereign: {
+        id: 'sapphire_sovereign',
+        name: 'Midnight Sapphire & Ice',
+        subtitle: 'Regal Navy, Royal Blue & Ice Platinum',
+        dotColor: '#60A5FA',
+        bgBody: 'bg-[#070913]',
+        accentText: 'text-blue-300',
+        accentGradient: 'from-blue-200 via-sky-400 to-indigo-400',
+        accentBtn: 'bg-gradient-to-r from-blue-300 via-sky-400 to-indigo-400 text-slate-950 shadow-[0_0_20px_rgba(96,165,250,0.3)]',
+        accentGlow: 'shadow-[0_0_25px_rgba(96,165,250,0.25)]',
+        accentRing: '#60A5FA',
+        accentBgLight: 'bg-blue-400/15',
+        accentBorderLight: 'border-blue-400/35',
+        confettiColors: ['#60A5FA', '#3B82F6', '#93C5FD', '#E0F2FE', '#ffffff'],
+      },
+      amber_cognac: {
+        id: 'amber_cognac',
+        name: 'Cognac Amber & Warm Bronze',
+        subtitle: 'Rich Cognac Oak, Honey Bronze & Warm Amber',
+        dotColor: '#FBBF24',
+        bgBody: 'bg-[#0e0a06]',
+        accentText: 'text-amber-300',
+        accentGradient: 'from-amber-200 via-amber-400 to-orange-500',
+        accentBtn: 'bg-gradient-to-r from-amber-200 via-amber-400 to-orange-400 text-slate-950 shadow-[0_0_20px_rgba(251,191,36,0.3)]',
+        accentGlow: 'shadow-[0_0_25px_rgba(251,191,36,0.25)]',
+        accentRing: '#FBBF24',
+        accentBgLight: 'bg-amber-400/15',
+        accentBorderLight: 'border-amber-400/35',
+        confettiColors: ['#FBBF24', '#F59E0B', '#D97706', '#FEF3C7', '#ffffff'],
+      }
+    };
+
+    // 25 SHNOI Master Progression Levels
+    const LEVEL_THRESHOLDS = [
+      { level: 1, xp: 0, title: 'Novice Athlete', rank: 'Initiate', icon: 'zap' },
+      { level: 2, xp: 200, title: 'Bronze Adept', rank: 'Adept', icon: 'activity' },
+      { level: 3, xp: 500, title: 'Silver Sentinel', rank: 'Sentinel', icon: 'shield' },
+      { level: 4, xp: 900, title: 'Iron Guard', rank: 'Guardian', icon: 'flame' },
+      { level: 5, xp: 1400, title: 'Steel Vanguard', rank: 'Vanguard', icon: 'award' },
+      { level: 6, xp: 2000, title: 'Obsidian Legionnaire', rank: 'Legionnaire', icon: 'target' },
+      { level: 7, xp: 2800, title: 'Golden Centurion', rank: 'Centurion', icon: 'trophy' },
+      { level: 8, xp: 3800, title: 'Elite Paragon', rank: 'Paragon', icon: 'sparkles' },
+      { level: 9, xp: 5000, title: 'Sovereign Champion', rank: 'Champion', icon: 'crown' },
+      { level: 10, xp: 6500, title: 'Grandmaster of Iron', rank: 'Grandmaster', icon: 'star' },
+      { level: 11, xp: 8200, title: 'High Warlord', rank: 'Warlord', icon: 'shield' },
+      { level: 12, xp: 10200, title: 'Apex Conqueror', rank: 'Apex', icon: 'activity' },
+      { level: 13, xp: 12500, title: 'Titan of Discipline', rank: 'Titan', icon: 'zap' },
+      { level: 14, xp: 15200, title: 'Shadow Vanguard', rank: 'Shadow', icon: 'flame' },
+      { level: 15, xp: 18300, title: 'Crowned Monarch', rank: 'Monarch', icon: 'crown' },
+      { level: 16, xp: 22000, title: 'Mythic Luminary', rank: 'Luminary', icon: 'sparkles' },
+      { level: 17, xp: 26500, title: 'Celestial Overlord', rank: 'Overlord', icon: 'star' },
+      { level: 18, xp: 32000, title: 'Ascended Immortal', rank: 'Immortal', icon: 'trophy' },
+      { level: 19, xp: 38500, title: 'Infinite Sovereign', rank: 'Sovereign', icon: 'award' },
+      { level: 20, xp: 46000, title: 'SHNOI Grand Sovereign', rank: 'SHNOI Master', icon: 'crown' },
+      { level: 21, xp: 55000, title: 'Supreme Titan Prime', rank: 'Titan Prime', icon: 'target' },
+      { level: 22, xp: 66000, title: 'Primordial Apex', rank: 'Primordial', icon: 'zap' },
+      { level: 23, xp: 80000, title: 'Demi-God of Iron', rank: 'Demi-God', icon: 'flame' },
+      { level: 24, xp: 100000, title: 'Eternal Deity', rank: 'Eternal', icon: 'sparkles' },
+      { level: 25, xp: 130000, title: 'SHNOI Supreme Apex', rank: 'SHNOI Apex', icon: 'star' },
+    ];
+
+    // Web Audio Synthesizer
     const playSynthSound = (type = 'rep') => {
       try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
@@ -74,7 +208,7 @@
         const now = ctx.currentTime;
         if (type === 'rep') {
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(587.33, now); // D5
+          osc.frequency.setValueAtTime(587.33, now);
           gain.gain.setValueAtTime(0.12, now);
           gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
           osc.start(now);
@@ -84,29 +218,20 @@
           osc.frequency.setValueAtTime(523.25, now);
           osc.frequency.setValueAtTime(659.25, now + 0.08);
           osc.frequency.setValueAtTime(783.99, now + 0.16);
-          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.setValueAtTime(0.18, now);
           gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
           osc.start(now);
           osc.stop(now + 0.35);
-        } else if (type === 'timer') {
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(880, now);
-          gain.gain.setValueAtTime(0.18, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-          osc.start(now);
-          osc.stop(now + 0.2);
         }
-      } catch (e) {
-        console.warn('Audio context playback not permitted', e);
-      }
+      } catch (e) {}
     };
 
     const speakCount = (count) => {
       if ('speechSynthesis' in window && count > 0) {
         window.speechSynthesis.cancel();
         const utter = new SpeechSynthesisUtterance(String(count));
-        utter.rate = 1.3;
-        utter.pitch = 1.1;
+        utter.rate = 1.35;
+        utter.pitch = 1.05;
         window.speechSynthesis.speak(utter);
       }
     };
@@ -117,11 +242,13 @@
       }
     };
 
-    // --- Built-in SVG Icons ---
+    // Vector Icons
     const Icon = ({ name, className = "w-4 h-4" }) => {
       switch (name) {
         case 'activity':
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>;
+        case 'zap':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
         case 'target':
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
         case 'flame':
@@ -130,6 +257,18 @@
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
         case 'award':
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>;
+        case 'trophy':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M6 9H4a2 2 0 01-2-2V5a2 2 0 012-2h2m12 6h2a2 2 0 002-2V5a2 2 0 00-2-2h-2M6 3h12v7a6 6 0 01-12 0V3z"/><path d="M9 21h6m-3-3v3"/></svg>;
+        case 'shield':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
+        case 'crown':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>;
+        case 'sparkles':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z"/></svg>;
+        case 'star':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
+        case 'clock':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
         case 'plus':
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
         case 'minus':
@@ -138,18 +277,16 @@
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>;
         case 'check':
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>;
-        case 'timer':
-          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-        case 'play':
-          return <svg className={className} fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
-        case 'pause':
-          return <svg className={className} fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>;
         case 'settings':
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>;
+        case 'palette':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>;
         case 'trash':
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>;
         case 'download':
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+        case 'upload':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>;
         case 'maximize':
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>;
         case 'minimize':
@@ -168,36 +305,299 @@
     const VARIATIONS = ['Standard', 'Wide Grip', 'Diamond / Close Grip', 'Decline', 'Incline', 'Pike', 'Archer', 'Custom'];
     const getTodayStr = () => new Date().toISOString().split('T')[0];
 
-    // --- Main App Component ---
+    // CSV Parser
+    function parseCSVLine(text) {
+      const result = [];
+      let cur = '';
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        if (char === '"') {
+          if (inQuotes && text[i + 1] === '"') { cur += '"'; i++; }
+          else inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(cur.trim());
+          cur = '';
+        } else {
+          cur += char;
+        }
+      }
+      result.push(cur.trim());
+      return result;
+    }
+
+    function parseCSVText(csvText) {
+      const lines = csvText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+      if (lines.length === 0) return { records: [], errors: ['File is empty.'] };
+
+      const records = [];
+      const headerTokens = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+      
+      let dateIdx = headerTokens.findIndex(h => h.includes('date'));
+      let countIdx = headerTokens.findIndex(h => h.includes('count') || h.includes('rep') || h.includes('pushup'));
+      let varIdx = headerTokens.findIndex(h => h.includes('var') || h.includes('type') || h.includes('style'));
+      let setIdx = headerTokens.findIndex(h => h.includes('set'));
+      let notesIdx = headerTokens.findIndex(h => h.includes('note') || h.includes('desc'));
+
+      let startLine = 1;
+      if (countIdx === -1) {
+        dateIdx = 0; countIdx = 2; varIdx = 3; setIdx = 4; notesIdx = 5;
+        startLine = 0;
+      }
+
+      for (let i = startLine; i < lines.length; i++) {
+        const tokens = parseCSVLine(lines[i]);
+        if (tokens.length === 0 || tokens.every(t => !t)) continue;
+
+        const rawCount = countIdx !== -1 && countIdx < tokens.length ? tokens[countIdx] : '';
+        const count = parseInt(rawCount.replace(/[^0-9]/g, ''), 10);
+        if (isNaN(count) || count <= 0) continue;
+
+        let dateVal = dateIdx !== -1 && dateIdx < tokens.length ? tokens[dateIdx] : getTodayStr();
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) {
+          const dObj = new Date(dateVal);
+          if (!isNaN(dObj.getTime())) dateVal = dObj.toISOString().split('T')[0];
+        }
+
+        const variation = varIdx !== -1 && varIdx < tokens.length && tokens[varIdx] ? tokens[varIdx] : 'Standard';
+        const setNumber = setIdx !== -1 && setIdx < tokens.length ? parseInt(tokens[setIdx], 10) || 1 : 1;
+        const notes = notesIdx !== -1 && notesIdx < tokens.length ? tokens[notesIdx] : '';
+
+        records.push({
+          id: `csv-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 6)}`,
+          date: dateVal,
+          count,
+          variation,
+          setNumber,
+          notes,
+          timestamp: Date.now() - (lines.length - i) * 60000
+        });
+      }
+      return { records };
+    }
+
+    // Gamification Engine for 25 Levels
+    function computeGamification(records, dailyTarget) {
+      const todayStr = getTodayStr();
+      const totalReps = records.reduce((sum, r) => sum + r.count, 0);
+
+      const dateMap = {};
+      records.forEach(r => {
+        if (!dateMap[r.date]) dateMap[r.date] = [];
+        dateMap[r.date].push(r);
+      });
+
+      const todayRecords = dateMap[todayStr] || [];
+      const todayReps = todayRecords.reduce((sum, r) => sum + r.count, 0);
+      const todayVariations = new Set(todayRecords.map(r => r.variation));
+      const maxTodaySet = todayRecords.length > 0 ? Math.max(...todayRecords.map(r => r.count)) : 0;
+      const bestLifetimeSet = records.length > 0 ? Math.max(...records.map(r => r.count)) : 0;
+
+      let daysGoalMet = 0;
+      Object.values(dateMap).forEach(recs => {
+        const sum = recs.reduce((a, b) => a + b.count, 0);
+        if (sum >= dailyTarget) daysGoalMet++;
+      });
+
+      let streak = 0;
+      const checkDate = new Date();
+      const activeDates = new Set(Object.keys(dateMap));
+      if (!activeDates.has(todayStr)) {
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+      while (activeDates.has(checkDate.toISOString().split('T')[0])) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+
+      const streakMultiplier = 1 + Math.min(0.5, streak * 0.05);
+      let rawXp = totalReps * 10 + daysGoalMet * 200 + records.length * 15;
+      const totalXp = Math.round(rawXp * streakMultiplier);
+
+      let currentLevelIdx = 0;
+      for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+        if (totalXp >= LEVEL_THRESHOLDS[i].xp) {
+          currentLevelIdx = i;
+          break;
+        }
+      }
+      const curLvl = LEVEL_THRESHOLDS[currentLevelIdx];
+      const nextLvl = LEVEL_THRESHOLDS[currentLevelIdx + 1] || {
+        level: curLvl.level + 1,
+        xp: curLvl.xp + 25000,
+        title: 'Infinite Sovereign',
+        rank: 'Legend',
+        icon: 'star'
+      };
+
+      const progressInLevel = Math.max(0, totalXp - curLvl.xp);
+      const xpNeeded = Math.max(1, nextLvl.xp - curLvl.xp);
+      const progressPercent = Math.min(100, Math.round((progressInLevel / xpNeeded) * 100));
+
+      const levelInfo = {
+        level: curLvl.level,
+        title: curLvl.title,
+        rank: curLvl.rank,
+        currentLevelXp: progressInLevel,
+        nextLevelXp: xpNeeded,
+        progressPercent,
+        totalXp,
+      };
+
+      const quests = [
+        {
+          id: 'q-daily-target',
+          title: 'SHNOI Daily Protocol',
+          desc: `Reach your daily target of ${dailyTarget} push-ups`,
+          rewardXp: 250,
+          current: todayReps,
+          target: dailyTarget,
+          completed: todayReps >= dailyTarget
+        },
+        {
+          id: 'q-power-set',
+          title: 'Power Surge Set',
+          desc: 'Execute a single set of 20+ reps',
+          rewardXp: 100,
+          current: maxTodaySet,
+          target: 20,
+          completed: maxTodaySet >= 20
+        },
+        {
+          id: 'q-variety',
+          title: 'Form Specialist',
+          desc: 'Log 2 distinct variations in a single day',
+          rewardXp: 150,
+          current: todayVariations.size,
+          target: 2,
+          completed: todayVariations.size >= 2
+        }
+      ];
+
+      const achievements = [
+        {
+          id: 'first-strike',
+          title: 'First SHNOI Protocol',
+          desc: 'Log your first push-up set',
+          tier: 'bronze',
+          progress: Math.min(1, records.length),
+          max: 1,
+          unlocked: records.length >= 1,
+          rewardXp: 50,
+          icon: 'zap'
+        },
+        {
+          id: 'century-club',
+          title: 'Century Monarch',
+          desc: 'Complete 100+ push-ups in a single day',
+          tier: 'silver',
+          progress: Math.min(100, todayReps),
+          max: 100,
+          unlocked: Object.values(dateMap).some(d => d.reduce((a, b) => a + b.count, 0) >= 100),
+          rewardXp: 250,
+          icon: 'award'
+        },
+        {
+          id: 'streak-3',
+          title: 'Iron Consistency',
+          desc: 'Maintain a 3-day active streak',
+          tier: 'silver',
+          progress: Math.min(3, streak),
+          max: 3,
+          unlocked: streak >= 3,
+          rewardXp: 300,
+          icon: 'flame'
+        },
+        {
+          id: 'streak-14',
+          title: 'SHNOI Discipline Sovereign',
+          desc: 'Maintain a 14-day workout streak',
+          tier: 'platinum',
+          progress: Math.min(14, streak),
+          max: 14,
+          unlocked: streak >= 14,
+          rewardXp: 1200,
+          icon: 'crown'
+        },
+        {
+          id: 'rep-500',
+          title: 'Iron Foundation',
+          desc: 'Reach 500 lifetime push-ups',
+          tier: 'silver',
+          progress: Math.min(500, totalReps),
+          max: 500,
+          unlocked: totalReps >= 500,
+          rewardXp: 400,
+          icon: 'shield'
+        },
+        {
+          id: 'rep-1000',
+          title: 'Centurion Legend',
+          desc: 'Reach 1,000 lifetime push-ups',
+          tier: 'gold',
+          progress: Math.min(1000, totalReps),
+          max: 1000,
+          unlocked: totalReps >= 1000,
+          rewardXp: 1000,
+          icon: 'crown'
+        },
+        {
+          id: 'rep-5000',
+          title: 'Apex Sovereign',
+          desc: 'Reach 5,000 lifetime push-ups',
+          tier: 'mythic',
+          progress: Math.min(5000, totalReps),
+          max: 5000,
+          unlocked: totalReps >= 5000,
+          rewardXp: 3000,
+          icon: 'star'
+        },
+        {
+          id: 'rep-10000',
+          title: 'SHNOI Immortal Legend',
+          desc: 'Achieve 10,000 total lifetime push-ups',
+          tier: 'mythic',
+          progress: Math.min(10000, totalReps),
+          max: 10000,
+          unlocked: totalReps >= 10000,
+          rewardXp: 6000,
+          icon: 'trophy'
+        }
+      ];
+
+      return { levelInfo, quests, achievements, streakMultiplier, streak, totalXp };
+    }
+
+    // Main App Component
     function App() {
-      // Data State
       const [records, setRecords] = useState(() => {
         try {
-          const saved = localStorage.getItem('pushup_records_v2');
+          const saved = localStorage.getItem('pushup_records_shnoi_pro_v3');
           return saved ? JSON.parse(saved) : [
-            { id: '1', date: getTodayStr(), count: 20, variation: 'Standard', timestamp: Date.now() - 3600000, setNumber: 1, notes: 'Warmup set' },
-            { id: '2', date: getTodayStr(), count: 25, variation: 'Standard', timestamp: Date.now() - 1800000, setNumber: 2, notes: 'Good tempo' }
+            { id: '1', date: getTodayStr(), count: 25, variation: 'Standard', timestamp: Date.now() - 3600000, setNumber: 1, notes: 'Warmup set' },
+            { id: '2', date: getTodayStr(), count: 30, variation: 'Wide Grip', timestamp: Date.now() - 1800000, setNumber: 2, notes: 'Strict form' }
           ];
         } catch (e) { return []; }
       });
 
       const [settings, setSettings] = useState(() => {
         try {
-          const saved = localStorage.getItem('pushup_settings_v2');
+          const saved = localStorage.getItem('pushup_settings_shnoi_pro_v3');
           return saved ? JSON.parse(saved) : {
             dailyTarget: 100,
             soundEnabled: true,
             voiceAnnounce: true,
             vibrateOnTap: true,
-            autoStartRestTimer: true,
-            defaultRestSeconds: 60
+            theme: 'champagne_gold',
           };
         } catch (e) {
-          return { dailyTarget: 100, soundEnabled: true, voiceAnnounce: true, vibrateOnTap: true, autoStartRestTimer: true, defaultRestSeconds: 60 };
+          return { dailyTarget: 100, soundEnabled: true, voiceAnnounce: true, vibrateOnTap: true, theme: 'champagne_gold' };
         }
       });
 
-      // UI State
+      const currentThemeId = settings.theme || 'champagne_gold';
+      const themeCfg = THEMES[currentThemeId] || THEMES.champagne_gold;
+
       const [activeTab, setActiveTab] = useState('counter');
       const [currentReps, setCurrentReps] = useState(0);
       const [variation, setVariation] = useState('Standard');
@@ -205,45 +605,43 @@
       const [notes, setNotes] = useState('');
       const [isFloorMode, setIsFloorMode] = useState(false);
       const [ripples, setRipples] = useState([]);
+      const [showAllLevels, setShowAllLevels] = useState(false);
 
-      // Rest Timer State
-      const [restTimeRemaining, setRestTimeRemaining] = useState(0);
-      const [isTimerRunning, setIsTimerRunning] = useState(false);
-      const [restDuration, setRestDuration] = useState(settings.defaultRestSeconds);
-
-      // Modals
       const [isAddModalOpen, setIsAddModalOpen] = useState(false);
       const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+      const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
       const [searchQuery, setSearchQuery] = useState('');
       const [selectedFilterVar, setSelectedFilterVar] = useState('All');
+      const [celebration, setCelebration] = useState(null);
 
-      // Sync LocalStorage
+      const fileInputRef = useRef(null);
+      const prevLevelRef = useRef(null);
+
       useEffect(() => {
-        localStorage.setItem('pushup_records_v2', JSON.stringify(records));
+        localStorage.setItem('pushup_records_shnoi_pro_v3', JSON.stringify(records));
       }, [records]);
 
       useEffect(() => {
-        localStorage.setItem('pushup_settings_v2', JSON.stringify(settings));
+        localStorage.setItem('pushup_settings_shnoi_pro_v3', JSON.stringify(settings));
       }, [settings]);
 
-      // Timer Interval
+      const gamification = useMemo(() => {
+        return computeGamification(records, settings.dailyTarget);
+      }, [records, settings.dailyTarget]);
+
       useEffect(() => {
-        let interval = null;
-        if (isTimerRunning && restTimeRemaining > 0) {
-          interval = setInterval(() => {
-            setRestTimeRemaining((prev) => {
-              if (prev <= 1) {
-                if (settings.soundEnabled) playSynthSound('timer');
-                triggerHaptic();
-                setIsTimerRunning(false);
-                return 0;
-              }
-              return prev - 1;
-            });
-          }, 1000);
+        if (prevLevelRef.current !== null && gamification.levelInfo.level > prevLevelRef.current) {
+          setCelebration({
+            type: 'level_up',
+            title: `SHNOI Prestige Upgrade: Level ${gamification.levelInfo.level}`,
+            subtitle: `You unlocked the rank of "${gamification.levelInfo.title}"!`
+          });
+          if (typeof confetti === 'function') {
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: themeCfg.confettiColors });
+          }
         }
-        return () => clearInterval(interval);
-      }, [isTimerRunning, restTimeRemaining, settings.soundEnabled]);
+        prevLevelRef.current = gamification.levelInfo.level;
+      }, [gamification.levelInfo.level]);
 
       // Keyboard Shortcuts
       useEffect(() => {
@@ -264,34 +662,63 @@
         return () => window.removeEventListener('keydown', handleKeyDown);
       }, [currentReps, variation, customVariation, notes]);
 
-      // Metrics Computation
       const todayStr = getTodayStr();
       const todayRecords = records.filter(r => r.date === todayStr);
       const todayReps = todayRecords.reduce((acc, r) => acc + r.count, 0);
       const todaySetsCount = todayRecords.length;
-      const todayGoalPercent = Math.min(100, Math.round((todayReps / settings.dailyTarget) * 100));
+      const todayGoalPercent = Math.min(100, Math.round(((todayReps + currentReps) / settings.dailyTarget) * 100));
 
-      const currentStreak = useMemo(() => {
-        const uniqueDates = Array.from(new Set(records.map(r => r.date))).sort().reverse();
-        if (uniqueDates.length === 0) return 0;
-        let streak = 0;
-        let checkDate = new Date();
-        if (!uniqueDates.includes(todayStr)) {
-          checkDate.setDate(checkDate.getDate() - 1);
-        }
-        while (true) {
-          const dStr = checkDate.toISOString().split('T')[0];
-          if (uniqueDates.includes(dStr)) {
-            streak++;
-            checkDate.setDate(checkDate.getDate() - 1);
-          } else {
-            break;
-          }
-        }
-        return streak;
-      }, [records, todayStr]);
+      const analytics = useMemo(() => {
+        const totalReps = records.reduce((a, b) => a + b.count, 0);
+        const totalSets = records.length;
+        const avgRepsPerSet = totalSets > 0 ? (totalReps / totalSets).toFixed(1) : '0';
+        const bestSingleSet = totalSets > 0 ? Math.max(...records.map(r => r.count)) : 0;
 
-      // Rep Increment Handler
+        const dayMap = {};
+        records.forEach(r => { dayMap[r.date] = (dayMap[r.date] || 0) + r.count; });
+        const activeDaysCount = Object.keys(dayMap).length;
+        const avgRepsPerActiveDay = activeDaysCount > 0 ? Math.round(totalReps / activeDaysCount) : 0;
+        const maxDayReps = activeDaysCount > 0 ? Math.max(...Object.values(dayMap)) : 0;
+
+        const estimatedCalories = Math.round(totalReps * 0.32);
+        const totalTonnageKg = ((totalReps * 48) / 1000).toFixed(1);
+
+        const varCounts = {};
+        records.forEach(r => {
+          const vName = r.variation || 'Standard';
+          varCounts[vName] = (varCounts[vName] || 0) + r.count;
+        });
+        const variationBreakdown = Object.entries(varCounts)
+          .map(([name, count]) => ({
+            name,
+            count,
+            percent: totalReps > 0 ? Math.round((count / totalReps) * 100) : 0
+          }))
+          .sort((a, b) => b.count - a.count);
+
+        const last30Days = [];
+        for (let i = 29; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          const dStr = d.toISOString().split('T')[0];
+          const reps = dayMap[dStr] || 0;
+          last30Days.push({ date: dStr, reps, met: reps >= settings.dailyTarget });
+        }
+
+        return {
+          totalReps,
+          totalSets,
+          avgRepsPerSet,
+          bestSingleSet,
+          avgRepsPerActiveDay,
+          maxDayReps,
+          estimatedCalories,
+          totalTonnageKg,
+          variationBreakdown,
+          last30Days
+        };
+      }, [records, settings.dailyTarget]);
+
       const handleRepIncrement = (amount, e) => {
         const next = Math.max(0, currentReps + amount);
         setCurrentReps(next);
@@ -316,9 +743,11 @@
         }
       };
 
-      // Log Current Set
       const handleLogSet = () => {
         if (currentReps <= 0) return;
+        const wasBelow = todayReps < settings.dailyTarget;
+        const isNowMet = (todayReps + currentReps) >= settings.dailyTarget;
+
         const newRecord = {
           id: String(Date.now()),
           date: todayStr,
@@ -328,23 +757,27 @@
           setNumber: todaySetsCount + 1,
           notes: notes.trim()
         };
+
         setRecords(prev => [newRecord, ...prev]);
         if (settings.soundEnabled) playSynthSound('complete');
         triggerHaptic();
 
-        // Reset
+        if (wasBelow && isNowMet) {
+          setCelebration({
+            type: 'daily_goal',
+            title: 'SHNOI Protocol Accomplished!',
+            subtitle: `You crushed your daily goal of ${settings.dailyTarget} push-ups! Bonus +250 XP earned.`
+          });
+          if (typeof confetti === 'function') {
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: themeCfg.confettiColors });
+          }
+        }
+
         setCurrentReps(0);
         setNotes('');
         setIsFloorMode(false);
-
-        // Auto Start Rest Timer
-        if (settings.autoStartRestTimer) {
-          setRestTimeRemaining(settings.defaultRestSeconds);
-          setIsTimerRunning(true);
-        }
       };
 
-      // Export CSV
       const handleExportCSV = () => {
         const headers = 'ID,Date,SetNumber,Reps,Variation,Notes,Timestamp\n';
         const rows = records.map(r => `"${r.id}","${r.date}",${r.setNumber || 1},${r.count},"${r.variation}","${(r.notes || '').replace(/"/g, '""')}","${new Date(r.timestamp).toISOString()}"`).join('\n');
@@ -352,57 +785,142 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `strikecore_pushups_${todayStr}.csv`;
+        a.download = `shnoi_pushups_${todayStr}.csv`;
         a.click();
       };
 
+      const handleCSVUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const { records: parsed } = parseCSVText(evt.target.result);
+            if (parsed.length === 0) {
+              alert('Could not find valid workout entries in CSV.');
+              return;
+            }
+            const merge = confirm(`Found ${parsed.length} push-up records in CSV.\n\nClick OK to MERGE with current history.\nClick Cancel to REPLACE all records.`);
+            if (merge) {
+              setRecords(prev => [...prev, ...parsed]);
+            } else {
+              setRecords(parsed);
+            }
+          } catch (err) {
+            alert('Failed to parse CSV: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      };
+
       return (
-        <div className="flex flex-col min-h-screen justify-between pb-24 sm:pb-8">
-          {/* Header */}
-          <header className="sticky top-0 z-30 border-b border-slate-800/80 bg-[#0f1115]/90 backdrop-blur-md px-4 py-3 sm:px-6">
-            <div className="mx-auto max-w-3xl flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-sky-600 text-slate-950 shadow-lg shadow-sky-500/20">
-                  <Icon name="activity" className="w-5 h-5 stroke-[2.5]" />
+        <div className={`flex flex-col min-h-screen justify-between pb-24 sm:pb-8 ${themeCfg.bgBody} transition-colors duration-300`}>
+          <input ref={fileInputRef} type="file" accept=".csv,text/csv" onChange={handleCSVUpload} className="hidden" />
+
+          {/* Sticky Header with Properly Aligned Controls */}
+          <header className="sticky top-0 z-30 border-b border-slate-800/80 bg-[#0a0907]/90 backdrop-blur-xl px-3.5 py-2.5 sm:px-6 sm:py-3">
+            <div className="mx-auto max-w-5xl flex items-center justify-between gap-2.5 sm:gap-4">
+              
+              {/* Branding */}
+              <div className="flex items-center gap-2.5 shrink-0">
+                <div
+                  onClick={() => setActiveTab('counter')}
+                  className={`flex h-9 w-9 sm:h-10 sm:w-10 cursor-pointer items-center justify-center rounded-xl bg-gradient-to-br ${themeCfg.accentGradient} text-slate-950 shadow-md ${themeCfg.accentGlow}`}
+                >
+                  <Icon name="activity" className="w-4 h-4 sm:h-5 sm:w-5 stroke-[2.5]" />
                 </div>
-                <div>
+                <div className="flex flex-col">
                   <div className="flex items-center gap-2">
-                    <span className="text-base font-extrabold tracking-tight text-white sm:text-lg">
-                      STRIKE<span className="text-sky-400">CORE</span>
+                    <span className="font-brand tracking-wider text-base sm:text-lg font-black text-white">
+                      SHNOI<span className={`ml-1 text-[10px] font-sans font-extrabold uppercase px-1.5 py-0.5 rounded bg-white/10 text-transparent bg-clip-text bg-gradient-to-r ${themeCfg.accentGradient} border border-white/10`}>PRO</span>
                     </span>
-                    {currentStreak > 0 && (
-                      <div className="flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-bold text-amber-400 border border-amber-500/20">
+
+                    {/* Streak Badge */}
+                    {gamification.streak > 0 && (
+                      <div className="flex h-6 items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-bold text-amber-300 border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.25)]">
                         <Icon name="flame" className="w-3 h-3 text-amber-400" />
-                        <span>{currentStreak}d</span>
+                        <span>{gamification.streak}d</span>
                       </div>
                     )}
                   </div>
-                  <p className="text-[10px] uppercase tracking-widest text-slate-500 font-medium hidden sm:block">Push-Up Performance Tracker</p>
+                  <p className={`text-[9px] uppercase tracking-widest ${themeCfg.accentText} font-semibold hidden sm:block leading-none mt-0.5`}>
+                    Precision Push-Up Performance
+                  </p>
                 </div>
               </div>
 
-              {/* Header Right Actions */}
-              <div className="flex items-center gap-2">
+              {/* Aligned Right Control Elements */}
+              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5">
+                {/* Level & XP Pill */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('stats')}
+                  className="flex h-9 items-center gap-2 rounded-xl border border-slate-800/90 bg-slate-900/70 px-2.5 py-1 text-left backdrop-blur-md hover:border-slate-700 transition-all shadow-sm shrink-0"
+                  title={`Level ${gamification.levelInfo.level}: ${gamification.levelInfo.title}`}
+                >
+                  <div className={`flex h-6 w-6 items-center justify-center rounded-lg ${themeCfg.accentBgLight} border ${themeCfg.accentBorderLight}`}>
+                    <Icon name="zap" className={`w-3 h-3 ${themeCfg.accentText}`} />
+                  </div>
+                  <div className="flex flex-col justify-center text-left min-w-[58px] sm:min-w-[70px]">
+                    <div className="flex items-center gap-1 leading-none">
+                      <span className={`text-[11px] font-black ${themeCfg.accentText}`}>Lv.{gamification.levelInfo.level}</span>
+                      <span className="text-[10px] text-slate-300 font-semibold truncate max-w-[45px] sm:max-w-[70px] leading-none">
+                        {gamification.levelInfo.rank}
+                      </span>
+                    </div>
+                    <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-slate-800">
+                      <div className={`h-full rounded-full bg-gradient-to-r ${themeCfg.accentGradient}`} style={{ width: `${gamification.levelInfo.progressPercent}%` }} />
+                    </div>
+                  </div>
+                </button>
+
                 {/* Today's Goal Ring */}
-                <div className="flex items-center gap-2 rounded-xl border border-slate-700/50 bg-slate-800/50 px-2.5 py-1 text-xs">
+                <div className="flex h-9 items-center gap-2 rounded-xl border border-slate-800/90 bg-slate-900/70 px-2.5 py-1 backdrop-blur-md shadow-sm shrink-0">
                   <div className="relative flex h-6 w-6 items-center justify-center">
                     <svg className="h-6 w-6 -rotate-90" viewBox="0 0 24 24">
                       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" className="text-slate-800" fill="none" />
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" strokeDasharray="56.5" strokeDashoffset={56.5 - (56.5 * todayGoalPercent) / 100} strokeLinecap="round" className="text-sky-400 transition-all duration-500" fill="none" />
+                      <circle cx="12" cy="12" r="9" stroke={themeCfg.accentRing} strokeWidth="3" strokeDasharray="56.5" strokeDashoffset={56.5 - (56.5 * todayGoalPercent) / 100} strokeLinecap="round" className="transition-all duration-700 ease-out" fill="none" />
                     </svg>
                     <Icon name="target" className="absolute w-2.5 h-2.5 text-slate-400" />
                   </div>
-                  <div className="text-left">
-                    <span className="font-mono-num font-bold text-sky-400 text-sm leading-none">{todayReps}</span>
-                    <span className="text-[10px] text-slate-500">/{settings.dailyTarget}</span>
+                  <div className="flex flex-col justify-center text-left leading-none">
+                    <div className="flex items-baseline gap-0.5 leading-none">
+                      <span className={`font-mono-num font-extrabold ${themeCfg.accentText} text-xs sm:text-sm`}>{todayReps}</span>
+                      <span className="text-[10px] text-slate-400 font-medium">/{settings.dailyTarget}</span>
+                    </div>
+                    <span className="text-[8px] uppercase tracking-wider text-slate-400 font-medium mt-0.5 leading-none">Goal</span>
                   </div>
                 </div>
 
+                {/* Log Set Quick Action */}
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="flex h-9 items-center gap-1.5 rounded-xl bg-slate-900/90 border border-slate-700/70 px-2.5 sm:px-3 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white shrink-0 shadow-sm"
+                  title="Manual Log"
+                >
+                  <Icon name="plus" className={`w-3.5 h-3.5 ${themeCfg.accentText}`} />
+                  <span className="hidden md:inline">Log Set</span>
+                </button>
+
+                {/* Theme Selector */}
+                <button
+                  type="button"
+                  onClick={() => setIsThemeModalOpen(true)}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800/90 bg-slate-900/70 text-slate-300 transition-colors hover:border-slate-600 hover:text-white relative shrink-0 shadow-sm"
+                  title={`Active Theme: ${themeCfg.name}`}
+                >
+                  <Icon name="palette" className="w-4 h-4" />
+                  <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full border border-black" style={{ backgroundColor: themeCfg.dotColor }} />
+                </button>
+
                 {/* Sound Toggle */}
                 <button
+                  type="button"
                   onClick={() => setSettings(s => ({ ...s, soundEnabled: !s.soundEnabled }))}
-                  className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
-                    settings.soundEnabled ? 'border-slate-700/50 bg-slate-800/60 text-sky-400' : 'border-slate-800 bg-slate-900/50 text-slate-500'
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-all shrink-0 shadow-sm ${
+                    settings.soundEnabled ? `${themeCfg.accentBorderLight} ${themeCfg.accentBgLight} ${themeCfg.accentText}` : 'border-slate-800/90 bg-slate-900/70 text-slate-400 hover:text-slate-200'
                   }`}
                   title={settings.soundEnabled ? 'Sound On' : 'Sound Off'}
                 >
@@ -411,80 +929,85 @@
 
                 {/* Settings Toggle */}
                 <button
+                  type="button"
                   onClick={() => setIsSettingsOpen(true)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700/50 bg-slate-800/60 text-slate-400 hover:text-slate-100"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800/90 bg-slate-900/70 text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200 shrink-0 shadow-sm"
                 >
                   <Icon name="settings" className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Desktop Tabs */}
-            <div className="mx-auto max-w-3xl mt-3 hidden sm:flex items-center gap-1 rounded-xl border border-slate-800/80 bg-slate-900/60 p-1">
+            {/* Desktop Navigation Tabs */}
+            <div className="mx-auto max-w-5xl mt-3 hidden sm:flex items-center gap-1 rounded-2xl border border-slate-800/80 bg-slate-950/70 p-1 backdrop-blur-md">
               <button
                 onClick={() => setActiveTab('counter')}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-all ${
-                  activeTab === 'counter' ? 'bg-slate-800 text-sky-400 border border-slate-700/40 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition-all ${
+                  activeTab === 'counter' ? `bg-slate-800/90 ${themeCfg.accentText} border border-white/10 shadow-md` : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 <Icon name="activity" className="w-3.5 h-3.5" /> Counter
               </button>
               <button
                 onClick={() => setActiveTab('history')}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-all ${
-                  activeTab === 'history' ? 'bg-slate-800 text-sky-400 border border-slate-700/40 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition-all ${
+                  activeTab === 'history' ? `bg-slate-800/90 ${themeCfg.accentText} border border-white/10 shadow-md` : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 <Icon name="calendar" className="w-3.5 h-3.5" /> Workout Logs
               </button>
               <button
                 onClick={() => setActiveTab('stats')}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-all ${
-                  activeTab === 'stats' ? 'bg-slate-800 text-sky-400 border border-slate-700/40 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition-all ${
+                  activeTab === 'stats' ? `bg-slate-800/90 ${themeCfg.accentText} border border-white/10 shadow-md` : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                <Icon name="award" className="w-3.5 h-3.5" /> Analytics
+                <Icon name="trophy" className="w-3.5 h-3.5" /> SHNOI 25 Ranks & Analytics
               </button>
             </div>
           </header>
 
-          {/* Main Workspace */}
-          <main className="mx-auto max-w-3xl w-full px-4 py-4 sm:py-6">
+          {/* Main Content Area */}
+          <main className="mx-auto max-w-5xl w-full px-4 py-4 sm:py-6">
             {/* COUNTER VIEW */}
             {activeTab === 'counter' && (
-              <div className="space-y-4">
+              <div className="space-y-4 max-w-2xl mx-auto">
                 {/* Floor Mode Fullscreen Overlay */}
                 {isFloorMode && (
                   <div
                     onClick={(e) => handleRepIncrement(1, e)}
-                    className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-[#0f1115] p-6 select-none cursor-pointer"
+                    className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-black p-6 select-none cursor-pointer overflow-hidden"
                   >
-                    <div className="flex w-full items-center justify-between">
-                      <span className="flex items-center gap-2 text-sky-400 text-xs font-semibold animate-pulse">
-                        <Icon name="activity" className="w-4 h-4" /> Floor Nose/Chin Tap Mode
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl pointer-events-none opacity-20" style={{ backgroundColor: themeCfg.dotColor }} />
+                    <div className="relative z-10 flex w-full items-center justify-between">
+                      <span className={`flex items-center gap-2 rounded-full ${themeCfg.accentBgLight} border ${themeCfg.accentBorderLight} px-3.5 py-1 ${themeCfg.accentText} text-xs font-semibold animate-pulse`}>
+                        <Icon name="activity" className="w-4 h-4" /> Floor Nose / Chest Tap Mode
                       </span>
                       <button
                         onClick={(e) => { e.stopPropagation(); setIsFloorMode(false); }}
-                        className="flex items-center gap-1 rounded-full bg-slate-800 px-3.5 py-1.5 text-xs font-semibold text-slate-200"
+                        className="flex items-center gap-1.5 rounded-full border border-slate-700/60 bg-slate-900/80 px-4 py-2 text-xs font-bold text-slate-200 shadow-lg hover:border-slate-500 hover:text-white backdrop-blur-md"
                       >
                         <Icon name="minimize" className="w-3.5 h-3.5" /> Exit
                       </button>
                     </div>
-                    <div className="text-center">
-                      <div className="text-9xl font-extrabold font-mono-num text-sky-400 tracking-tight">{currentReps}</div>
-                      <p className="mt-3 text-xs uppercase tracking-widest text-slate-400 font-semibold">Tap anywhere with nose / chest</p>
+                    <div className="relative z-10 text-center my-auto">
+                      <div className={`text-8xl sm:text-9xl font-black font-mono-num text-transparent bg-clip-text bg-gradient-to-b ${themeCfg.accentGradient} tracking-tight drop-shadow-[0_0_35px_rgba(229,195,120,0.3)]`}>
+                        {currentReps}
+                      </div>
+                      <p className={`mt-4 text-xs font-bold tracking-widest uppercase ${themeCfg.accentText}`}>Tap anywhere with nose or chest</p>
+                      <p className="text-xs text-slate-400 mt-1 font-medium">Set #{todaySetsCount + 1} • {variation}</p>
                     </div>
-                    <div className="w-full max-w-sm flex gap-2">
+                    <div className="relative z-10 w-full max-w-sm flex gap-3" onClick={e => e.stopPropagation()}>
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleLogSet(); }}
+                        onClick={() => handleLogSet()}
                         disabled={currentReps === 0}
-                        className="flex-1 rounded-2xl bg-gradient-to-r from-sky-400 to-sky-500 py-4 font-bold text-slate-950 shadow-lg disabled:opacity-40"
+                        className={`flex-1 rounded-2xl ${themeCfg.accentBtn} py-4 font-extrabold shadow-lg transition-all active:scale-95 disabled:opacity-40`}
                       >
                         Log Set ({currentReps} Reps)
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); setCurrentReps(0); }}
-                        className="rounded-2xl border border-slate-700 bg-slate-800 p-4 text-slate-400"
+                        onClick={() => setCurrentReps(0)}
+                        className="rounded-2xl border border-slate-700 bg-slate-900/90 p-4 text-slate-400 hover:text-white active:scale-95"
                       >
                         <Icon name="rotate" className="w-5 h-5" />
                       </button>
@@ -492,28 +1015,30 @@
                   </div>
                 )}
 
-                {/* Primary Counter Card */}
-                <div className="rounded-3xl border border-slate-800/80 bg-slate-900/40 p-5 sm:p-7 shadow-2xl">
-                  {/* Top variation & options */}
-                  <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-800/80">
+                {/* Primary Interactive Counter Card */}
+                <div className="relative overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-900/40 p-5 sm:p-7 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-3xl pointer-events-none opacity-15" style={{ backgroundColor: themeCfg.dotColor }} />
+
+                  {/* Variation selector & Floor mode toggle */}
+                  <div className="relative z-10 flex items-center justify-between gap-2 pb-4 border-b border-slate-800/70">
                     <select
                       value={variation}
                       onChange={(e) => setVariation(e.target.value)}
-                      className="rounded-xl border border-slate-700/50 bg-slate-800/60 px-3 py-1.5 text-xs font-semibold text-slate-200 focus:outline-none focus:border-sky-500"
+                      className="rounded-xl border border-slate-700/60 bg-slate-800/60 px-3 py-1.5 text-xs font-semibold text-slate-200 focus:outline-none focus:border-slate-500"
                     >
                       {VARIATIONS.map(v => <option key={v} value={v} className="bg-slate-900">{v}</option>)}
                     </select>
 
                     <div className="flex items-center gap-2">
                       <span className="rounded-lg bg-slate-800/60 border border-slate-700/50 px-2.5 py-1 text-xs font-medium text-slate-300">
-                        Set <span className="font-bold text-sky-400">#{todaySetsCount + 1}</span>
+                        Set <span className={`font-bold ${themeCfg.accentText}`}>#{todaySetsCount + 1}</span>
                       </span>
                       <button
                         onClick={() => setIsFloorMode(true)}
-                        className="flex items-center gap-1 rounded-lg border border-slate-700/50 bg-slate-800/60 px-2.5 py-1 text-xs font-medium text-slate-300 hover:text-white"
-                        title="Full screen floor tap"
+                        className="flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-slate-800/60 px-2.5 py-1 text-xs font-medium text-slate-300 hover:border-slate-500 hover:text-white transition-colors"
+                        title="Floor Nose Tap Mode"
                       >
-                        <Icon name="maximize" className="w-3.5 h-3.5 text-sky-400" />
+                        <Icon name="maximize" className={`w-3.5 h-3.5 ${themeCfg.accentText}`} />
                         <span className="hidden sm:inline">Floor Mode</span>
                       </button>
                     </div>
@@ -522,190 +1047,139 @@
                   {variation === 'Custom' && (
                     <input
                       type="text"
-                      placeholder="Enter custom exercise name..."
+                      placeholder="Enter custom variation name..."
                       value={customVariation}
                       onChange={(e) => setCustomVariation(e.target.value)}
-                      className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-xs text-white focus:outline-none"
+                      className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-slate-500"
                     />
                   )}
 
-                  {/* Big Tap Disc */}
-                  <div className="my-6 flex justify-center">
+                  {/* Classy Large Pushup Pad */}
+                  <div className="my-8 flex justify-center">
                     <div
                       onClick={(e) => handleRepIncrement(1, e)}
-                      className="group relative flex h-56 w-56 sm:h-64 sm:w-64 cursor-pointer select-none items-center justify-center rounded-full border-4 border-slate-700/60 bg-slate-800/50 shadow-2xl transition-transform active:scale-95 hover:border-sky-500/50"
+                      className="group relative flex h-56 w-56 sm:h-64 sm:w-64 cursor-pointer select-none items-center justify-center rounded-full border-4 border-slate-700/60 bg-gradient-to-b from-slate-800/70 to-slate-900/90 shadow-[0_0_40px_rgba(0,0,0,0.5)] transition-all active:scale-95 hover:border-slate-500 overflow-hidden"
                     >
-                      <div className="absolute inset-0 rounded-full bg-sky-500/10 blur-xl group-hover:bg-sky-500/20" />
+                      <div className="absolute inset-0 rounded-full blur-xl opacity-20 group-hover:opacity-35 transition-all duration-300" style={{ backgroundColor: themeCfg.dotColor }} />
+                      <div className="absolute inset-1 rounded-full border pointer-events-none transition-colors" style={{ borderColor: `${themeCfg.dotColor}30` }} />
                       {ripples.map(rip => (
                         <div
                           key={rip.id}
-                          style={{ left: rip.x, top: rip.y }}
-                          className="pointer-events-none absolute h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-sky-400/40 animate-ping-once"
+                          style={{ left: rip.x, top: rip.y, backgroundColor: themeCfg.dotColor }}
+                          className="pointer-events-none absolute h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60 animate-ping-custom"
                         />
                       ))}
                       <div className="relative z-10 text-center">
-                        <div className="font-mono-num text-7xl sm:text-8xl font-black text-white">{currentReps}</div>
-                        <span className="mt-1 text-xs font-semibold uppercase tracking-widest text-sky-400 block">Push-Ups</span>
-                        <span className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Tap Pad</span>
+                        <div className={`font-mono-num text-7xl sm:text-8xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-b ${themeCfg.accentGradient} drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]`}>
+                          {currentReps}
+                        </div>
+                        <span className={`mt-1 text-xs font-bold uppercase tracking-widest ${themeCfg.accentText} block`}>
+                          {currentReps === 1 ? 'Push-Up' : 'Push-Ups'}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wider text-slate-400 font-medium mt-0.5 block">Tap Pad or Space</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Increments / Quick adjustments */}
+                  {/* Increment Buttons */}
                   <div className="flex items-center justify-center gap-2">
                     <button
                       onClick={() => handleRepIncrement(-1)}
                       disabled={currentReps <= 0}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/50 bg-slate-800/60 text-slate-300 disabled:opacity-40"
+                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/60 bg-slate-800/60 text-slate-300 disabled:opacity-30 transition-all active:scale-90"
                     >
                       <Icon name="minus" className="w-4 h-4" />
                     </button>
-                    <button onClick={(e) => handleRepIncrement(1, e)} className="h-10 px-3 rounded-xl border border-slate-700/50 bg-slate-800/60 text-xs font-bold text-slate-200 hover:text-sky-400">+1</button>
-                    <button onClick={(e) => handleRepIncrement(5, e)} className="h-10 px-3 rounded-xl border border-slate-700/50 bg-slate-800/60 text-xs font-bold text-slate-200 hover:text-sky-400">+5</button>
-                    <button onClick={(e) => handleRepIncrement(10, e)} className="h-10 px-3 rounded-xl border border-slate-700/50 bg-slate-800/60 text-xs font-bold text-slate-200 hover:text-sky-400">+10</button>
+                    <button onClick={(e) => handleRepIncrement(1, e)} className="h-10 px-3.5 rounded-xl border border-slate-700/60 bg-slate-800/60 text-xs font-bold text-slate-200 hover:border-slate-500 hover:text-white active:scale-95 transition-all">+1</button>
+                    <button onClick={(e) => handleRepIncrement(5, e)} className="h-10 px-3.5 rounded-xl border border-slate-700/60 bg-slate-800/60 text-xs font-bold text-slate-200 hover:border-slate-500 hover:text-white active:scale-95 transition-all">+5</button>
+                    <button onClick={(e) => handleRepIncrement(10, e)} className="h-10 px-3.5 rounded-xl border border-slate-700/60 bg-slate-800/60 text-xs font-bold text-slate-200 hover:border-slate-500 hover:text-white active:scale-95 transition-all">+10</button>
                     <button
                       onClick={() => setCurrentReps(0)}
                       disabled={currentReps <= 0}
-                      className="h-10 px-3 flex items-center gap-1 rounded-xl border border-slate-700/50 bg-slate-800/60 text-xs font-medium text-slate-400 disabled:opacity-40"
+                      className="h-10 px-3 flex items-center gap-1 rounded-xl border border-slate-700/60 bg-slate-800/60 text-xs font-medium text-slate-400 disabled:opacity-30 active:scale-95 transition-all"
                     >
                       <Icon name="rotate" className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  {/* Set Notes Input */}
-                  <div className="mt-4">
+                  {/* Note input */}
+                  <div className="mt-5">
                     <input
                       type="text"
                       placeholder="Optional set note (e.g. strict form, fast tempo...)"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="w-full rounded-xl border border-slate-700/50 bg-slate-800/40 px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                      className="w-full rounded-xl border border-slate-700/50 bg-slate-950/60 px-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-slate-500 transition-colors"
                     />
                   </div>
 
-                  {/* Log Set Primary Button */}
+                  {/* Primary Finish Set Action */}
                   <button
                     onClick={handleLogSet}
                     disabled={currentReps === 0}
-                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-400 to-sky-500 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-sky-500/20 active:scale-[0.99] disabled:opacity-40"
+                    className={`mt-5 flex w-full items-center justify-center gap-2 rounded-2xl ${themeCfg.accentBtn} py-3.5 text-sm font-extrabold active:scale-[0.98] disabled:opacity-40 transition-all`}
                   >
                     <Icon name="check" className="w-5 h-5 stroke-[2.5]" />
-                    <span>{currentReps > 0 ? `Log Set (${currentReps} Reps)` : 'Tap pad to record push-ups'}</span>
+                    <span>{currentReps > 0 ? `Finish & Log Set #${todaySetsCount + 1} (${currentReps} Reps)` : 'Tap pad to record push-ups'}</span>
                   </button>
 
-                  {/* Goal Progress Bar */}
-                  <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-900/50 p-3.5">
-                    <div className="flex items-center justify-between text-xs mb-1.5">
+                  {/* Goal Bar */}
+                  <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/50 p-4">
+                    <div className="flex items-center justify-between text-xs mb-2">
                       <span className="font-semibold text-slate-300 flex items-center gap-1.5">
-                        <Icon name="target" className="w-3.5 h-3.5 text-sky-400" /> Today's Goal Progress
+                        <Icon name="target" className={`w-3.5 h-3.5 ${themeCfg.accentText}`} /> Today's Goal Progress
                       </span>
-                      <span className="font-mono-num text-sky-400 font-bold">
-                        {todayReps + currentReps} / {settings.dailyTarget} ({Math.min(100, Math.round(((todayReps + currentReps) / settings.dailyTarget) * 100))}%)
+                      <span className={`font-mono-num ${themeCfg.accentText} font-bold`}>
+                        {todayReps + currentReps} / {settings.dailyTarget} ({todayGoalPercent}%)
                       </span>
                     </div>
                     <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-sky-500 to-sky-400 transition-all duration-300"
-                        style={{ width: `${Math.min(100, Math.round(((todayReps + currentReps) / settings.dailyTarget) * 100))}%` }}
+                        className={`h-full rounded-full bg-gradient-to-r ${themeCfg.accentGradient} ${themeCfg.accentGlow} transition-all duration-300`}
+                        style={{ width: `${todayGoalPercent}%` }}
                       />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Rest Timer Card */}
-                <div className={`rounded-3xl border p-4 sm:p-5 transition-all ${
-                  isTimerRunning ? 'border-sky-500/40 bg-slate-900/80 shadow-lg shadow-sky-500/10' : 'border-slate-800/80 bg-slate-900/40'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${
-                        isTimerRunning ? 'bg-sky-500/20 text-sky-400 animate-pulse' : 'bg-slate-800 text-slate-400'
-                      }`}>
-                        <Icon name="timer" className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">Rest Timer</h4>
-                        <p className="text-[11px] text-slate-400">{isTimerRunning ? 'Resting between sets' : 'Ready for next rest'}</p>
-                      </div>
-                    </div>
-                    <div className="font-mono-num text-2xl font-bold text-sky-400">
-                      {Math.floor((restTimeRemaining > 0 ? restTimeRemaining : restDuration) / 60)}:
-                      {String((restTimeRemaining > 0 ? restTimeRemaining : restDuration) % 60).padStart(2, '0')}
-                    </div>
-                  </div>
-
-                  <div className="mt-3 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      {[30, 45, 60, 90].map(sec => (
-                        <button
-                          key={sec}
-                          onClick={() => { setRestDuration(sec); setRestTimeRemaining(sec); setIsTimerRunning(true); }}
-                          className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${
-                            restDuration === sec && isTimerRunning ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-300'
-                          }`}
-                        >
-                          {sec}s
-                        </button>
-                      ))}
-                    </div>
-                    <div>
-                      {isTimerRunning ? (
-                        <div className="flex gap-1.5">
-                          <button onClick={() => setIsTimerRunning(false)} className="rounded-xl bg-slate-800 px-3 py-1.5 text-xs text-amber-400 font-semibold flex items-center gap-1">
-                            <Icon name="pause" className="w-3 h-3" /> Pause
-                          </button>
-                          <button onClick={() => { setIsTimerRunning(false); setRestTimeRemaining(0); }} className="rounded-xl bg-slate-800 px-3 py-1.5 text-xs text-slate-400">Skip</button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => {
-                            if (restTimeRemaining === 0) setRestTimeRemaining(restDuration);
-                            setIsTimerRunning(true);
-                          }}
-                          className="rounded-xl bg-sky-500/20 border border-sky-500/30 px-3.5 py-1.5 text-xs font-semibold text-sky-400 flex items-center gap-1"
-                        >
-                          <Icon name="play" className="w-3 h-3" /> Start Rest
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* HISTORY VIEW */}
+            {/* WORKOUT LOGS VIEW */}
             {activeTab === 'history' && (
               <div className="space-y-4">
-                <div className="rounded-3xl border border-slate-800/80 bg-slate-900/40 p-4 sm:p-5">
-                  <div className="flex items-center justify-between gap-2">
+                <div className="rounded-3xl border border-slate-800/80 bg-slate-900/40 p-4 sm:p-5 backdrop-blur-xl shadow-xl">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h2 className="text-base font-bold text-white flex items-center gap-2">
-                        <Icon name="calendar" className="w-4 h-4 text-sky-400" /> Workout Logs
+                        <Icon name="calendar" className={`w-4 h-4 ${themeCfg.accentText}`} /> SHNOI Workout Logs & History
                       </h2>
-                      <p className="text-xs text-slate-400">Total {records.length} sets logged</p>
+                      <p className="text-xs text-slate-400">Total of <span className={`font-bold ${themeCfg.accentText}`}>{records.length} sets</span> recorded</p>
                     </div>
-                    <div className="flex gap-2">
-                      <button onClick={handleExportCSV} className="rounded-xl border border-slate-700/50 bg-slate-800/60 px-3 py-1.5 text-xs font-semibold text-slate-300 flex items-center gap-1">
-                        <Icon name="download" className="w-3.5 h-3.5" /> CSV
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button onClick={() => fileInputRef.current?.click()} className="rounded-xl border border-slate-700/60 bg-slate-800/60 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:border-slate-500 hover:text-white transition-colors flex items-center gap-1">
+                        <Icon name="upload" className="w-3.5 h-3.5" /> Import CSV
                       </button>
-                      <button onClick={() => setIsAddModalOpen(true)} className="rounded-xl bg-gradient-to-r from-sky-400 to-sky-500 px-3.5 py-1.5 text-xs font-bold text-slate-950 shadow-md">
-                        + Log Entry
+                      <button onClick={handleExportCSV} className="rounded-xl border border-slate-700/60 bg-slate-800/60 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:border-slate-500 hover:text-white transition-colors flex items-center gap-1">
+                        <Icon name="download" className="w-3.5 h-3.5" /> Export CSV
+                      </button>
+                      <button onClick={() => setIsAddModalOpen(true)} className={`rounded-xl ${themeCfg.accentBtn} px-3.5 py-1.5 text-xs font-extrabold`}>
+                        + Manual Log
                       </button>
                     </div>
                   </div>
 
-                  <div className="mt-3 flex gap-2">
+                  <div className="mt-3.5 flex gap-2">
                     <input
                       type="text"
                       placeholder="Search date, variation, notes..."
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      className="w-full rounded-xl border border-slate-700/60 bg-slate-950/70 px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+                      className="w-full rounded-xl border border-slate-700/60 bg-slate-950/70 px-3 py-2 text-xs text-white focus:outline-none focus:border-slate-500 transition-colors"
                     />
                     <select
                       value={selectedFilterVar}
                       onChange={e => setSelectedFilterVar(e.target.value)}
-                      className="rounded-xl border border-slate-700/60 bg-slate-950/70 px-3 py-2 text-xs text-slate-200"
+                      className="rounded-xl border border-slate-700/60 bg-slate-950/70 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-slate-500"
                     >
                       <option value="All">All Variations</option>
                       {VARIATIONS.map(v => <option key={v} value={v}>{v}</option>)}
@@ -713,26 +1187,26 @@
                   </div>
                 </div>
 
-                {/* Log List */}
                 <div className="space-y-2.5">
                   {records.filter(r => {
                     const matchQ = (r.date.includes(searchQuery) || (r.variation || '').toLowerCase().includes(searchQuery.toLowerCase()) || (r.notes || '').toLowerCase().includes(searchQuery.toLowerCase()));
                     const matchV = selectedFilterVar === 'All' || r.variation === selectedFilterVar;
                     return matchQ && matchV;
                   }).map(rec => (
-                    <div key={rec.id} className="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-900/50 p-3.5">
+                    <div key={rec.id} className="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-900/50 p-3.5 shadow-lg backdrop-blur-md hover:border-slate-700/70 transition-all">
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-white text-sm">{rec.variation}</span>
                           <span className="font-mono-num text-xs text-slate-500">{rec.date}</span>
+                          {rec.setNumber && <span className="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded font-mono-num">Set #{rec.setNumber}</span>}
                         </div>
                         {rec.notes && <p className="text-xs text-slate-400 mt-0.5 italic">"{rec.notes}"</p>}
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-mono-num text-base font-extrabold text-sky-400">+{rec.count} <span className="text-xs text-slate-500 font-normal">reps</span></span>
+                        <span className={`font-mono-num text-base font-extrabold ${themeCfg.accentText}`}>+{rec.count} <span className="text-xs text-slate-500 font-normal">reps</span></span>
                         <button
                           onClick={() => setRecords(prev => prev.filter(p => p.id !== rec.id))}
-                          className="p-1.5 text-slate-500 hover:text-rose-400"
+                          className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors"
                         >
                           <Icon name="trash" className="w-3.5 h-3.5" />
                         </button>
@@ -746,109 +1220,367 @@
               </div>
             )}
 
-            {/* STATS VIEW */}
+            {/* STATS & 25 SHNOI MASTER RANKS VIEW */}
             {activeTab === 'stats' && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4">
-                    <span className="uppercase tracking-wider text-[10px] font-medium text-slate-400 block mb-1">Lifetime Reps</span>
-                    <div className="font-mono-num text-2xl font-extrabold text-white">{records.reduce((a, b) => a + b.count, 0).toLocaleString()}</div>
-                    <span className="text-[10px] text-slate-500">{records.length} total sets</span>
-                  </div>
-                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4">
-                    <span className="uppercase tracking-wider text-[10px] font-medium text-slate-400 block mb-1">Active Streak</span>
-                    <div className="font-mono-num text-2xl font-extrabold text-amber-400">{currentStreak} <span className="text-xs text-slate-400">days</span></div>
-                  </div>
-                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4">
-                    <span className="uppercase tracking-wider text-[10px] font-medium text-slate-400 block mb-1">Best Single Set</span>
-                    <div className="font-mono-num text-2xl font-extrabold text-sky-400">{Math.max(0, ...records.map(r => r.count))} <span className="text-xs text-slate-400">reps</span></div>
-                  </div>
-                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4">
-                    <span className="uppercase tracking-wider text-[10px] font-medium text-slate-400 block mb-1">Today's Total</span>
-                    <div className="font-mono-num text-2xl font-extrabold text-sky-400">{todayReps} <span className="text-xs text-slate-400">reps</span></div>
+              <div className="space-y-5">
+                {/* Level & Rank Hero Banner */}
+                <div className="rounded-3xl border border-slate-800/90 bg-gradient-to-b from-slate-900/90 to-slate-950/90 p-5 sm:p-6 shadow-2xl backdrop-blur-2xl">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+                    <div className="flex items-center gap-4">
+                      <div className={`relative flex h-16 w-16 sm:h-20 sm:w-20 shrink-0 items-center justify-center rounded-3xl bg-slate-900/90 border ${themeCfg.accentBorderLight} ${themeCfg.accentGlow}`}>
+                        <Icon name="zap" className={`w-8 h-8 sm:w-10 sm:h-10 ${themeCfg.accentText}`} />
+                        <div className="absolute -bottom-2 -right-1 rounded-full bg-slate-950 px-2 py-0.5 border border-slate-700 font-mono-num text-[11px] font-black text-white">
+                          Lv.{gamification.levelInfo.level}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs uppercase tracking-widest text-slate-400 font-bold">Rank Tier {gamification.levelInfo.level} of 25</span>
+                          {gamification.streakMultiplier > 1 && (
+                            <span className="rounded-full bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-[10px] font-extrabold text-amber-300">
+                              +{Math.round((gamification.streakMultiplier - 1) * 100)}% XP Boost
+                            </span>
+                          )}
+                        </div>
+                        <h2 className="text-xl sm:text-2xl font-black text-white mt-0.5">{gamification.levelInfo.title}</h2>
+                        <p className="text-xs text-slate-400 mt-1">Total Discipline: <span className={`font-mono-num font-bold ${themeCfg.accentText}`}>{gamification.totalXp.toLocaleString()} XP</span></p>
+                      </div>
+                    </div>
+
+                    <div className="w-full md:max-w-xs flex flex-col justify-center bg-slate-950/50 p-3.5 rounded-2xl border border-slate-800/80">
+                      <div className="flex items-center justify-between text-xs mb-1.5">
+                        <span className="font-semibold text-slate-300">Next Level Progression</span>
+                        <span className="font-mono-num font-bold text-slate-200">{gamification.levelInfo.currentLevelXp} / {gamification.levelInfo.nextLevelXp} XP</span>
+                      </div>
+                      <div className="h-3 w-full overflow-hidden rounded-full bg-slate-900 border border-slate-800">
+                        <div className={`h-full rounded-full bg-gradient-to-r ${themeCfg.accentGradient}`} style={{ width: `${gamification.levelInfo.progressPercent}%` }} />
+                      </div>
+                      <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-500">
+                        <span>Level {gamification.levelInfo.level}</span>
+                        <span>{gamification.levelInfo.progressPercent}% Complete</span>
+                        <span>Level {gamification.levelInfo.level + 1}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* 7-Day Performance Bars */}
-                <div className="rounded-3xl border border-slate-800/80 bg-slate-900/40 p-5">
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
-                    <Icon name="award" className="w-4 h-4 text-sky-400" /> Last 7 Days Activity
-                  </h3>
-                  <div className="flex h-44 items-end justify-between gap-2 border-b border-slate-800/80 pb-3">
-                    {Array.from({ length: 7 }).map((_, i) => {
-                      const d = new Date();
-                      d.setDate(d.getDate() - (6 - i));
-                      const dStr = d.toISOString().split('T')[0];
-                      const dayReps = records.filter(r => r.date === dStr).reduce((a, b) => a + b.count, 0);
-                      const maxReps = Math.max(settings.dailyTarget, ...records.map(r => r.count));
-                      const heightPercent = Math.min(100, Math.round((dayReps / maxReps) * 100));
-                      const isMet = dayReps >= settings.dailyTarget;
+                {/* 25 Levels Master Prestige Ladder */}
+                <div className="rounded-3xl border border-slate-800/80 bg-slate-900/40 p-5 sm:p-6 shadow-xl backdrop-blur-xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Icon name="crown" className={`w-4 h-4 ${themeCfg.accentText}`} />
+                      <div>
+                        <h3 className="text-sm font-bold text-white">SHNOI 25 Master Ranks Protocol</h3>
+                        <p className="text-[11px] text-slate-400">Prestige tier ladder from Novice to Supreme Apex</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAllLevels(!showAllLevels)}
+                      className={`flex items-center gap-1 text-xs font-bold ${themeCfg.accentText} hover:underline px-2 py-1 rounded-lg hover:bg-slate-800/60 transition-colors`}
+                    >
+                      <span>{showAllLevels ? 'Show Current Tier' : 'View All 25 Levels'}</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+                    {(showAllLevels
+                      ? LEVEL_THRESHOLDS
+                      : LEVEL_THRESHOLDS.filter(
+                          (lvl) =>
+                            Math.abs(lvl.level - gamification.levelInfo.level) <= 2 ||
+                            lvl.level === 1 ||
+                            lvl.level === 25
+                        )
+                    ).map((threshold) => {
+                      const isCurrent = threshold.level === gamification.levelInfo.level;
+                      const isUnlocked = threshold.level <= gamification.levelInfo.level;
+
                       return (
-                        <div key={dStr} className="flex flex-1 flex-col items-center gap-1.5 h-full justify-end">
-                          <span className="text-[10px] font-mono-num text-slate-400">{dayReps > 0 ? dayReps : '-'}</span>
-                          <div className="w-full max-w-[36px] bg-slate-800/80 rounded-xl h-full flex items-end overflow-hidden">
-                            <div
-                              className={`w-full rounded-xl transition-all ${isMet ? 'bg-gradient-to-t from-sky-500 to-sky-300' : dayReps > 0 ? 'bg-sky-600/80' : 'bg-transparent'}`}
-                              style={{ height: `${Math.max(dayReps > 0 ? 10 : 0, heightPercent)}%` }}
-                            />
+                        <div
+                          key={threshold.level}
+                          className={`relative flex flex-col justify-between rounded-2xl border p-3 transition-all ${
+                            isCurrent
+                              ? `${themeCfg.accentBorderLight} ${themeCfg.accentBgLight} shadow-lg ring-1 ring-white/20`
+                              : isUnlocked
+                              ? 'border-slate-700/80 bg-slate-950/70'
+                              : 'border-slate-800/40 bg-slate-950/30 opacity-50'
+                          }`}
+                        >
+                          {isCurrent && (
+                            <span className={`absolute -top-2 right-2 rounded-full px-1.5 py-0.2 text-[9px] font-black uppercase tracking-wider ${themeCfg.accentBtn}`}>
+                              Current
+                            </span>
+                          )}
+
+                          <div className="flex items-center justify-between gap-1 mb-1.5">
+                            <span className={`text-[11px] font-black ${isCurrent ? themeCfg.accentText : 'text-slate-300'}`}>
+                              Lv.{threshold.level}
+                            </span>
+                            {isUnlocked ? (
+                              <Icon name="check" className="w-3.5 h-3.5 text-emerald-400" />
+                            ) : (
+                              <span className="text-slate-600 text-[10px]">Locked</span>
+                            )}
                           </div>
-                          <span className={`text-[10px] font-semibold ${dStr === todayStr ? 'text-sky-400' : 'text-slate-400'}`}>
-                            {d.toLocaleDateString('en-US', { weekday: 'short' })}
-                          </span>
+
+                          <div className="text-xs font-bold text-white truncate leading-tight" title={threshold.title}>
+                            {threshold.title}
+                          </div>
+                          <div className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                            {threshold.rank}
+                          </div>
+
+                          <div className="mt-2 pt-1.5 border-t border-slate-800/50 flex items-center justify-between text-[9px] font-mono-num text-slate-400">
+                            <span>Req.</span>
+                            <span className="font-bold text-slate-300">{threshold.xp.toLocaleString()} XP</span>
+                          </div>
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+
+                {/* Daily Quests Grid */}
+                <div className="rounded-3xl border border-slate-800/80 bg-slate-900/40 p-5 sm:p-6 shadow-xl backdrop-blur-xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Icon name="sparkles" className={`w-4 h-4 ${themeCfg.accentText}`} />
+                      <h3 className="text-sm font-bold text-white">Daily Quests & Protocols</h3>
+                    </div>
+                    <span className="text-[11px] text-slate-400 font-medium">Resets at midnight</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {gamification.quests.map(q => (
+                      <div key={q.id} className={`flex flex-col justify-between rounded-2xl border p-4 transition-all ${q.completed ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-slate-800 bg-slate-950/60'}`}>
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-extrabold text-white">{q.title}</span>
+                            <span className={`text-[11px] font-mono-num font-extrabold ${q.completed ? 'text-emerald-400' : themeCfg.accentText}`}>+{q.rewardXp} XP</span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 mt-1 leading-snug">{q.desc}</p>
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-slate-800/50">
+                          <div className="flex items-center justify-between text-[11px] mb-1">
+                            <span className="text-slate-400 font-mono-num">{q.current} / {q.target}</span>
+                            {q.completed ? <span className="font-bold text-emerald-400 text-[10px]">Claimed</span> : <span className="text-slate-500 text-[10px]">In Progress</span>}
+                          </div>
+                          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-900">
+                            <div className={`h-full rounded-full ${q.completed ? 'bg-emerald-400' : `bg-gradient-to-r ${themeCfg.accentGradient}`}`} style={{ width: `${Math.min(100, Math.round((q.current / q.target) * 100))}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Core KPI Statistics Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4 shadow-lg backdrop-blur-xl">
+                    <span className="uppercase tracking-wider text-[10px] font-bold text-slate-400 block mb-1">Lifetime Volume</span>
+                    <div className="font-mono-num text-2xl font-extrabold text-white">{analytics.totalReps.toLocaleString()}</div>
+                    <span className="text-[10px] text-slate-500 font-medium">Across {analytics.totalSets} sets</span>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4 shadow-lg backdrop-blur-xl">
+                    <span className="uppercase tracking-wider text-[10px] font-bold text-slate-400 block mb-1">Estimated Energy</span>
+                    <div className="font-mono-num text-2xl font-extrabold text-amber-400">{analytics.estimatedCalories} <span className="text-xs text-slate-400 font-semibold">kcal</span></div>
+                    <span className="text-[10px] text-slate-500 font-medium">~0.32 kcal / pushup</span>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4 shadow-lg backdrop-blur-xl">
+                    <span className="uppercase tracking-wider text-[10px] font-bold text-slate-400 block mb-1">Best Single Set</span>
+                    <div className={`font-mono-num text-2xl font-extrabold ${themeCfg.accentText}`}>{analytics.bestSingleSet} <span className="text-xs text-slate-400 font-semibold">reps</span></div>
+                    <span className="text-[10px] text-slate-500 font-medium">Avg: {analytics.avgRepsPerSet} reps/set</span>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4 shadow-lg backdrop-blur-xl">
+                    <span className="uppercase tracking-wider text-[10px] font-bold text-slate-400 block mb-1">Tonnage Moved</span>
+                    <div className="font-mono-num text-2xl font-extrabold text-sky-400">{analytics.totalTonnageKg} <span className="text-xs text-slate-400 font-semibold">Tons</span></div>
+                    <span className="text-[10px] text-slate-500 font-medium">Bodyweight resistance</span>
+                  </div>
+                </div>
+
+                {/* 30-Day Activity Heatmap Matrix */}
+                <div className="rounded-3xl border border-slate-800/80 bg-slate-900/40 p-5 sm:p-6 shadow-xl backdrop-blur-xl">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Icon name="calendar" className={`w-4 h-4 ${themeCfg.accentText}`} /> 30-Day Consistency Matrix
+                    </h3>
+                    <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                      <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-slate-800 inline-block"/> Rest</span>
+                      <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-700/60 inline-block"/> Active</span>
+                      <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-[#E5C378] inline-block"/> Goal Met</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-6 sm:grid-cols-10 gap-2">
+                    {analytics.last30Days.map(d => {
+                      let bg = 'bg-slate-800/60 border-slate-700/40';
+                      if (d.met) bg = 'bg-[#E5C378] text-slate-950 border-[#E5C378] shadow-[0_0_8px_rgba(229,195,120,0.4)]';
+                      else if (d.reps > 0) bg = 'bg-amber-800/60 text-amber-200 border-amber-600/50';
+
+                      return (
+                        <div
+                          key={d.date}
+                          className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-transform hover:scale-105 ${bg}`}
+                          title={`${d.date}: ${d.reps} push-ups`}
+                        >
+                          <span className="text-[9px] opacity-75 font-mono-num">{d.date.slice(5)}</span>
+                          <span className="text-xs font-mono-num font-bold">{d.reps > 0 ? d.reps : '-'}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Push-Up Variation Breakdown */}
+                <div className="rounded-3xl border border-slate-800/80 bg-slate-900/40 p-5 sm:p-6 shadow-xl backdrop-blur-xl">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
+                    <Icon name="award" className={`w-4 h-4 ${themeCfg.accentText}`} /> Grip & Variation Distribution
+                  </h3>
+                  <div className="space-y-3">
+                    {analytics.variationBreakdown.map(v => (
+                      <div key={v.name} className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-semibold text-slate-300">{v.name}</span>
+                          <span className="font-mono-num font-bold text-white">{v.count} reps ({v.percent}%)</span>
+                        </div>
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                          <div className={`h-full rounded-full bg-gradient-to-r ${themeCfg.accentGradient}`} style={{ width: `${v.percent}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Achievements Trophy Badges Case */}
+                <div className="rounded-3xl border border-slate-800/80 bg-slate-900/40 p-5 sm:p-6 shadow-xl backdrop-blur-xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Icon name="trophy" className={`w-4 h-4 ${themeCfg.accentText}`} /> SHNOI Achievements & Trophies
+                    </h3>
+                    <span className="text-xs text-slate-400">
+                      {gamification.achievements.filter(a => a.unlocked).length} / {gamification.achievements.length} Unlocked
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {gamification.achievements.map(badge => (
+                      <div key={badge.id} className={`flex items-start gap-3 rounded-2xl border p-3.5 transition-all ${badge.unlocked ? 'border-slate-700/80 bg-slate-950/70 shadow-md' : 'border-slate-800/50 bg-slate-950/30 opacity-50'}`}>
+                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border ${badge.unlocked ? `${themeCfg.accentBgLight} ${themeCfg.accentBorderLight} ${themeCfg.accentText}` : 'border-slate-800 text-slate-600'}`}>
+                          <Icon name={badge.icon} className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="block text-xs font-bold text-white truncate">{badge.title}</span>
+                          <span className="block text-[10px] text-slate-400 leading-tight mt-0.5">{badge.desc}</span>
+                          <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 font-mono-num">
+                            <span>{badge.progress}/{badge.max}</span>
+                            <span className={`font-bold ${themeCfg.accentText}`}>+{badge.rewardXp} XP</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             )}
           </main>
 
-          {/* Sticky Mobile Bottom Nav */}
-          <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-800/90 bg-[#0f1115]/95 backdrop-blur-lg sm:hidden px-3 pt-2 pb-3">
+          {/* Sticky Mobile Bottom Navigation */}
+          <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-800/90 bg-[#0a0907]/95 backdrop-blur-xl sm:hidden px-3 pt-2 pb-3">
             <div className="flex items-center justify-around">
-              <button
-                onClick={() => setActiveTab('counter')}
-                className={`flex flex-col items-center ${activeTab === 'counter' ? 'text-sky-400 font-bold' : 'text-slate-400'}`}
-              >
+              <button onClick={() => setActiveTab('counter')} className={`flex flex-col items-center ${activeTab === 'counter' ? `${themeCfg.accentText} font-extrabold` : 'text-slate-400'}`}>
                 <Icon name="activity" className="w-5 h-5 mb-0.5" />
                 <span className="text-[10px]">Counter</span>
               </button>
-              <button
-                onClick={() => setActiveTab('history')}
-                className={`flex flex-col items-center ${activeTab === 'history' ? 'text-sky-400 font-bold' : 'text-slate-400'}`}
-              >
+              <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center ${activeTab === 'history' ? `${themeCfg.accentText} font-extrabold` : 'text-slate-400'}`}>
                 <Icon name="calendar" className="w-5 h-5 mb-0.5" />
                 <span className="text-[10px]">Logs</span>
               </button>
-              <button
-                onClick={() => setIsAddModalOpen(true)}
-                className="flex h-11 w-11 -mt-4 items-center justify-center rounded-full bg-gradient-to-tr from-sky-500 to-sky-400 text-slate-950 shadow-lg shadow-sky-500/30"
-              >
+              <button onClick={() => setIsAddModalOpen(true)} className={`flex h-11 w-11 -mt-4 items-center justify-center rounded-full ${themeCfg.accentBtn} active:scale-95 transition-transform`}>
                 <Icon name="plus" className="w-6 h-6 stroke-[2.5]" />
               </button>
-              <button
-                onClick={() => setActiveTab('stats')}
-                className={`flex flex-col items-center ${activeTab === 'stats' ? 'text-sky-400 font-bold' : 'text-slate-400'}`}
-              >
-                <Icon name="award" className="w-5 h-5 mb-0.5" />
-                <span className="text-[10px]">Stats</span>
+              <button onClick={() => setActiveTab('stats')} className={`flex flex-col items-center ${activeTab === 'stats' ? `${themeCfg.accentText} font-extrabold` : 'text-slate-400'}`}>
+                <Icon name="trophy" className="w-5 h-5 mb-0.5" />
+                <span className="text-[10px]">25 Ranks</span>
               </button>
-              <button
-                onClick={() => setIsSettingsOpen(true)}
-                className="flex flex-col items-center text-slate-400"
-              >
+              <button onClick={() => setIsSettingsOpen(true)} className="flex flex-col items-center text-slate-400">
                 <Icon name="settings" className="w-5 h-5 mb-0.5" />
                 <span className="text-[10px]">Settings</span>
               </button>
             </div>
           </nav>
 
-          {/* MANUAL ENTRY MODAL */}
+          {/* Celebration Modal */}
+          {celebration && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
+              <div className="w-full max-w-sm rounded-3xl border border-slate-700/80 bg-slate-900/95 p-6 text-center shadow-2xl backdrop-blur-2xl">
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-tr from-slate-800 to-slate-900 border border-slate-700/60 shadow-xl relative">
+                  <Icon name="trophy" className={`w-10 h-10 ${themeCfg.accentText}`} />
+                </div>
+                <h3 className="text-xl font-black text-white mt-4">{celebration.title}</h3>
+                <p className="text-xs text-slate-300 mt-2">{celebration.subtitle}</p>
+                <button
+                  onClick={() => setCelebration(null)}
+                  className={`mt-6 w-full rounded-2xl ${themeCfg.accentBtn} py-3 text-xs font-black uppercase tracking-wider`}
+                >
+                  Continue SHNOI Protocol
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Classy Theme Selector Modal */}
+          {isThemeModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
+              <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/95 p-6 shadow-2xl backdrop-blur-xl">
+                <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Icon name="palette" className="w-5 h-5 text-white" />
+                    <div>
+                      <h3 className="text-base font-bold text-white">Classy Visual Themes</h3>
+                      <p className="text-xs text-slate-400">Select your active aesthetic</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsThemeModalOpen(false)} className="text-slate-400 hover:text-white">
+                    <Icon name="x" className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2.5 max-h-[60vh] overflow-y-auto pr-1">
+                  {Object.values(THEMES).map((t) => {
+                    const isSelected = (settings.theme || 'champagne_gold') === t.id;
+                    return (
+                      <button
+                        key={t.id}
+                        onClick={() => setSettings(s => ({ ...s, theme: t.id }))}
+                        className={`flex items-center gap-2.5 rounded-2xl border p-3 text-left transition-all ${
+                          isSelected ? 'border-white/50 bg-slate-800 shadow-md ring-1 ring-white/30' : 'border-slate-800/80 bg-slate-950/50 hover:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl shadow-md" style={{ backgroundColor: t.dotColor }}>
+                          {isSelected && <Icon name="check" className="w-4 h-4 text-slate-950 stroke-[3]" />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="block text-xs font-bold text-white truncate">{t.name}</span>
+                          <span className="block text-[9px] text-slate-400 truncate">{t.subtitle}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="mt-5 border-t border-slate-800/80 pt-4 flex justify-end">
+                  <button onClick={() => setIsThemeModalOpen(false)} className="rounded-xl bg-white px-5 py-2 text-xs font-extrabold text-slate-950 shadow-md">
+                    Done
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Manual Entry Modal */}
           {isAddModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
               <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/95 p-6 shadow-2xl">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
                   <h3 className="text-base font-bold text-white">Log Push-Up Record</h3>
                   <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white">
                     <Icon name="x" className="w-4 h-4" />
@@ -874,46 +1606,47 @@
                 >
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1">Date</label>
-                    <input type="date" name="date" defaultValue={todayStr} required className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white" />
+                    <input type="date" name="date" defaultValue={todayStr} required className="w-full rounded-xl border border-slate-700/60 bg-slate-950/80 px-3 py-2 text-xs text-white" />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1">Reps Count</label>
-                    <input type="number" name="count" defaultValue="20" min="1" required className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-mono-num text-sm font-bold text-sky-400" />
+                    <input type="number" name="count" defaultValue="20" min="1" required className={`w-full rounded-xl border border-slate-700/60 bg-slate-950/80 px-3 py-2 font-mono-num text-sm font-bold ${themeCfg.accentText}`} />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1">Variation</label>
-                    <select name="variation" defaultValue="Standard" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200">
+                    <select name="variation" defaultValue="Standard" className="w-full rounded-xl border border-slate-700/60 bg-slate-950/80 px-3 py-2 text-xs text-slate-200">
                       {VARIATIONS.map(v => <option key={v} value={v}>{v}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1">Notes</label>
-                    <input type="text" name="notes" placeholder="Optional notes" className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white" />
+                    <input type="text" name="notes" placeholder="Optional notes" className="w-full rounded-xl border border-slate-700/60 bg-slate-950/80 px-3 py-2 text-xs text-white" />
                   </div>
-                  <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                  <div className="flex justify-end gap-2 pt-3 border-t border-slate-800/80">
                     <button type="button" onClick={() => setIsAddModalOpen(false)} className="rounded-xl border border-slate-700 px-4 py-2 text-xs text-slate-400">Cancel</button>
-                    <button type="submit" className="rounded-xl bg-gradient-to-r from-sky-400 to-sky-500 px-4 py-2 text-xs font-bold text-slate-950">Save Entry</button>
+                    <button type="submit" className={`rounded-xl ${themeCfg.accentBtn} px-4 py-2 text-xs font-extrabold`}>Save Entry</button>
                   </div>
                 </form>
               </div>
             </div>
           )}
 
-          {/* SETTINGS MODAL */}
+          {/* Preferences & Settings Modal */}
           {isSettingsOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
               <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/95 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <h3 className="text-base font-bold text-white">App Preferences</h3>
+                <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                  <h3 className="text-base font-bold text-white">App Preferences & Data</h3>
                   <button onClick={() => setIsSettingsOpen(false)} className="text-slate-400 hover:text-white">
                     <Icon name="x" className="w-4 h-4" />
                   </button>
                 </div>
                 <div className="mt-4 space-y-4 text-xs">
-                  <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                  {/* Daily Target Slider */}
+                  <div className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
                     <div className="flex justify-between mb-2">
-                      <span className="font-bold text-white">Daily Target Reps</span>
-                      <span className="font-mono-num text-sm font-bold text-sky-400">{settings.dailyTarget} reps</span>
+                      <span className="font-bold text-white">Daily Push-Up Target</span>
+                      <span className={`font-mono-num text-sm font-bold ${themeCfg.accentText}`}>{settings.dailyTarget} reps</span>
                     </div>
                     <input
                       type="range"
@@ -922,39 +1655,58 @@
                       step="10"
                       value={settings.dailyTarget}
                       onChange={e => setSettings(s => ({ ...s, dailyTarget: parseInt(e.target.value) }))}
-                      className="w-full accent-sky-500 cursor-pointer"
+                      className="w-full accent-[#E5C378] cursor-pointer"
                     />
                   </div>
 
-                  <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 space-y-3">
+                  {/* Toggle Controls */}
+                  <div className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4 space-y-3">
                     <div className="flex items-center justify-between">
-                      <span>Sound Effects</span>
-                      <input type="checkbox" checked={settings.soundEnabled} onChange={e => setSettings(s => ({ ...s, soundEnabled: e.target.checked }))} className="accent-sky-500 h-4 w-4" />
+                      <span className="font-medium text-white">Audio Synthesizer</span>
+                      <input type="checkbox" checked={settings.soundEnabled} onChange={e => setSettings(s => ({ ...s, soundEnabled: e.target.checked }))} className="accent-[#E5C378] h-4 w-4" />
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Voice Count Announcements</span>
-                      <input type="checkbox" checked={settings.voiceAnnounce} onChange={e => setSettings(s => ({ ...s, voiceAnnounce: e.target.checked }))} className="accent-sky-500 h-4 w-4" />
+                      <span className="font-medium text-white">Voice Count Announcements</span>
+                      <input type="checkbox" checked={settings.voiceAnnounce} onChange={e => setSettings(s => ({ ...s, voiceAnnounce: e.target.checked }))} className="accent-[#E5C378] h-4 w-4" />
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Haptic Vibration on Tap</span>
-                      <input type="checkbox" checked={settings.vibrateOnTap} onChange={e => setSettings(s => ({ ...s, vibrateOnTap: e.target.checked }))} className="accent-sky-500 h-4 w-4" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Auto-Start Rest Timer</span>
-                      <input type="checkbox" checked={settings.autoStartRestTimer} onChange={e => setSettings(s => ({ ...s, autoStartRestTimer: e.target.checked }))} className="accent-sky-500 h-4 w-4" />
+                      <span className="font-medium text-white">Haptic Vibration on Tap</span>
+                      <input type="checkbox" checked={settings.vibrateOnTap} onChange={e => setSettings(s => ({ ...s, vibrateOnTap: e.target.checked }))} className="accent-[#E5C378] h-4 w-4" />
                     </div>
                   </div>
 
-                  <div className="pt-2 flex justify-between gap-2">
-                    <button
-                      onClick={() => {
-                        if (confirm('Clear all push-up records?')) setRecords([]);
-                      }}
-                      className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-rose-400 font-semibold"
-                    >
-                      Clear Data
-                    </button>
-                    <button onClick={() => setIsSettingsOpen(false)} className="rounded-xl bg-gradient-to-r from-sky-400 to-sky-500 px-5 py-2 font-bold text-slate-950">
+                  {/* Import/Export Data */}
+                  <div className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4 space-y-2.5">
+                    <span className="font-bold text-white block">Data Management</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button onClick={handleExportCSV} className="rounded-xl border border-slate-700/60 bg-slate-900 py-2 text-xs font-semibold text-slate-200 hover:border-slate-500 hover:text-white flex items-center justify-center gap-1.5">
+                        <Icon name="download" className="w-3.5 h-3.5" /> Export CSV
+                      </button>
+                      <button onClick={() => {
+                        const blob = new Blob([JSON.stringify({ records, settings }, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `shnoi_backup_${todayStr}.json`;
+                        a.click();
+                      }} className="rounded-xl border border-slate-700/60 bg-slate-900 py-2 text-xs font-semibold text-slate-200 hover:border-slate-500 hover:text-white flex items-center justify-center gap-1.5">
+                        <Icon name="download" className="w-3.5 h-3.5" /> Export JSON
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button onClick={() => fileInputRef.current?.click()} className="rounded-xl border border-slate-700/60 bg-slate-900 py-2 text-xs font-semibold text-slate-200 hover:border-slate-500 hover:text-white flex items-center justify-center gap-1.5">
+                        <Icon name="upload" className="w-3.5 h-3.5" /> Import CSV
+                      </button>
+                      <button onClick={() => {
+                        if (confirm('Clear all push-up history and reset levels?')) setRecords([]);
+                      }} className="rounded-xl border border-rose-500/20 bg-rose-500/10 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-500/20">
+                        Reset All Data
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex justify-end border-t border-slate-800/80">
+                    <button onClick={() => setIsSettingsOpen(false)} className={`rounded-xl ${themeCfg.accentBtn} px-5 py-2 font-extrabold`}>
                       Done
                     </button>
                   </div>
